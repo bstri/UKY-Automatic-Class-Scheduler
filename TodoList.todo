@@ -1,25 +1,61 @@
-How to obtain up-to-date course catalog for latest semester:
-	Needs user to be signed in to myuk.uky.edu
+Summary:
+	☐	Graphical or text-based configuration input
+	☐	Obtain up-to-date course catalog for latest semester
+		>	Needs user to sign in to myuk.uky.edu
+	☐	Calculating desirable schedules based on classes and configuration
+	☐	Saving results and/or graphical output
 
-What about graphics:
+Questions:
+	☐	Should the different features (ex "Meal Break") be priorities (that can be stretched or broken) or limits (that may prevent schedules from being found at all)? If priorities, how should they be stretched/broken?
+		> One option is that the user can configure a list of priorities where the highest priorities are broken last; the user can also specify the same type of requirement multiple times (ex lowest priority might be "Meal break of 2 hours in duration", but highest priority might be "Meal break of 20 minutes in duration"). These conditions could also "Maximize"/"Minimize" something, ex "Maximize meal break".
 
---------Nice Additional Features--------
+Configuration Input:
+	☐	Minimum number of credits
+	☐	List of class names to choose from
+	> See "Nice Additional Features" for more possible options
 
-Lunch Break:
-	Prioritizes schedules that accommodate lunch breaks
-	☐	Define lunch break 
-		No more than 3 hours of classes in a row?
+Retrieving Course Catalog:
+	☐	
+
+Calculating Desirable Schedules:
+	☐	
+
+Saving Results / Output:
+	☐	
+
+--- ✄ -----------------------
+Nice Additional Features:
+--- ✄ -----------------------
+
+Meal Break:
+	Prioritizes schedules that accommodate lunch breaks.
+	☐	Allow user to specify lunch break minimum start/end times and minimum duration
+
+Maximum Consecutive Class Time:
+	Avoids schedules that have more than a specified number of hours of classes in a row
+	☐	Allow specification of maximum
 		
 Professor Exclusion:
 	Prioritizes schedules that do not contain a particular professor
 	> Can create a list of professors after the classes have been entered in
+	☐	Show user list of professor options in the format:
+		Course 1: Professors for that course
+		Course 2: and so on
+	☐	Allow users to exclude or mandate professors
 	
 Time Exclusion:
 	Prioritizes schedules that leave open a particular time range
+	☐	Allow input of specific time ranges to leave open for a specific day or days of the week, month, or even year
+		☐	[Advanced] Some events happen "every other Thursday", or "1st and 3rd Monday of the month"
 	
 Buddy System:
 	Add a friend's schedule information to see which classes you could take together
-	> Could have said friend export their schedule results, then you would import
+	☐	Allow exporting of results to a file (that said friend could send to the user)
+	☐	Allow importing these results
+	☐	Look for shared classes amongst the possibilities
 	
 No long walks:
 	Keep all your classes close together
+	☐	Determine which building each class is in
+	☐	Determine how far apart buildings are
+	☐	Allow input of walking preferences (including "minimize", "target min/max minutes")
