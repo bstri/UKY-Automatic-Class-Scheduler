@@ -10,8 +10,10 @@ Questions:
 		> One option is that the user can configure a list of priorities where the highest priorities are broken last; the user can also specify the same type of requirement multiple times (ex lowest priority might be "Meal break of 2 hours in duration", but highest priority might be "Meal break of 20 minutes in duration"). These conditions could also "Maximize"/"Minimize" something, ex "Maximize meal break".
 
 Configuration Input:
-	☐	Minimum number of credits
-	☐	List of class names to choose from
+	☐	Minimum number of credits (default 12)
+	☐	Maximum number of credits (default 21)
+	☐	To add class, textboxes that let you type in department, course number, and optionally section number (for when you know exactly which section you'll need)
+	☐	Denote classes as mandatory that must appear in all schedules
 	> See "Nice Additional Features" for more possible options
 
 Retrieving Course Catalog:
@@ -19,6 +21,13 @@ Retrieving Course Catalog:
 
 Calculating Desirable Schedules:
 	☐	
+	
+Sorting Schedules:
+	By...
+	> Start time (when first class starts): add up the start times for each day of the week then average
+	> End time (when last class lets out): same
+	> Number of credits
+	> See "Nice Additional Features" for more possibilities
 
 Saving Results / Output:
 	☐	
@@ -26,14 +35,6 @@ Saving Results / Output:
 --- ✄ -----------------------
 Nice Additional Features:
 --- ✄ -----------------------
-
-Meal Break:
-	Prioritizes schedules that accommodate lunch breaks.
-	☐	Allow user to specify lunch break minimum start/end times and minimum duration
-
-Maximum Consecutive Class Time:
-	Avoids schedules that have more than a specified number of hours of classes in a row
-	☐	Allow specification of maximum
 		
 Professor Exclusion:
 	Prioritizes schedules that do not contain a particular professor
@@ -44,18 +45,38 @@ Professor Exclusion:
 	☐	Allow users to exclude or mandate professors
 	
 Time Exclusion:
-	Prioritizes schedules that leave open a particular time range
-	☐	Allow input of specific time ranges to leave open for a specific day or days of the week, month, or even year
-		☐	[Advanced] Some events happen "every other Thursday", or "1st and 3rd Monday of the month"
+	Prioritizes schedules that leave open a particular time range on particular day(s) of the week
+	> E.g. no 8 am's, no evening classes, etc.
 	
+Select/Deselect Schedules:
+	Allow user to give themselves visual clues as to which schedules they like and dislike
+	> Could grey out and move to the bottom of the list if they "deselect" a schedule that they don't like
+	> Could highlight and move to the top/dedicated place on the side if they like a particular schedule
+	
+Course Blocks: 
+	Can separate courses into blocks and do actions on each block (like specifying minimum credits)
+	> E.g. Useful if you must take 2 courses from 3 options, and then the rest are electives
+
+Meal Break:
+	Prioritizes schedules that accommodate lunch breaks.
+	☐	Allow user to specify lunch break minimum start/end times and minimum duration
+
 Buddy System:
 	Add a friend's schedule information to see which classes you could take together
 	☐	Allow exporting of results to a file (that said friend could send to the user)
 	☐	Allow importing these results
 	☐	Look for shared classes amongst the possibilities
+
+Maximum Consecutive Class Time:
+	Avoids schedules that have more than a specified number of hours of classes in a row
+	☐	Allow specification of maximum
 	
 No long walks:
-	Keep all your classes close together
+	Allow sorting the schedule list by collective distance between all classes
 	☐	Determine which building each class is in
 	☐	Determine how far apart buildings are
-	☐	Allow input of walking preferences (including "minimize", "target min/max minutes")
+	> Too innaccurate and subjective to try to allow time estimation, and not all that useful
+		> However, when forming schedules we can exclude those schedules where making it to class on time is not possible because the classes are on opposite sides of campus (which is rare)
+			
+Professor Ratings:
+	Scrape RateMyProfessors (website) and allow sorting schedules with the highest professor ratings
