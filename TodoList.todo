@@ -1,48 +1,70 @@
 Summary:
 	☐	Graphical or text-based configuration input
-	☐	Obtain up-to-date course catalog for latest semester
-		>	Needs user to sign in to myuk.uky.edu
+	☐	Obtain up-to-date classes for specified semester and desired courses
 	☐	Calculating desirable schedules based on classes and configuration
 	☐	Saving results and/or graphical output
 
 Questions:
 	☐	Should the different features (ex "Meal Break") be priorities (that can be stretched or broken) or limits (that may prevent schedules from being found at all)? If priorities, how should they be stretched/broken?
 		> One option is that the user can configure a list of priorities where the highest priorities are broken last; the user can also specify the same type of requirement multiple times (ex lowest priority might be "Meal break of 2 hours in duration", but highest priority might be "Meal break of 20 minutes in duration"). These conditions could also "Maximize"/"Minimize" something, ex "Maximize meal break".
+	✔	Scraping concern: should information fetching be spread out over a certain amount of time (ex a few seconds between requests)? @done (18-05-15 23:33)
+		+ Due to low # of overall requests and information involved, just wait for one to finish before going on to the next
+	☐	How frequently might course information change? We should cache the information so we don't have to fetch the same information repeatedly every time the user changes the input even slightly, but how long should the information remain cached?
+		✔	Can we ask the server for a "last modified date" without getting all the other information back? > NO @done (18-05-15 23:39)
+		1. Save cache for up to 12 hours with refresh button to override
+		2. Save cache for up to a month, but also attempt to update it if the user requests schedules and it's been more than 30 minutes -- if an "estimated time left" for all requests to finish is more than a few seconds AND there is no information not available in the cache AND any information already downloaded didn't change compared to what was already in the cache, show the user a "cancel fetching most recent information" button
 
 Configuration Input:
+	☐	Specify year/semester (default based on current date)
 	☐	Minimum number of credits (default 12)
 	☐	Maximum number of credits (default 21)
-	☐	To add class, textboxes that let you type in department, course number, and optionally section number (for when you know exactly which section you'll need)
-	☐	Denote classes as mandatory that must appear in all schedules
+	☐	To add a course, have textboxes that let you type in department, course number, and optionally section number (for when you know exactly which section you'll need), and a checkbox to allow denoting classes as mandatory that must appear in all proposed schedules
+	☐	Validate input after control-focus is lost
+	☐	Allow saving/loading configurations
 	> See "Nice Additional Features" for more possible options
 
-Retrieving Course Catalog:
-	☐	
+Retrieving Course Information:
+	☐	Get available class schedules for the input courses
+		✔	Determine where to get this information @done (18-05-16 00:06)
+		☐	Deal with caching
 
 Calculating Desirable Schedules:
-	☐	
+	Once the course information has been retrieved...
+	☐	Run schedule generation algorithm
+	☐	Display output
+	☐	Allow saving results to a file
+
+Possible schedule generation algorithms:
+	1. Brute force: For every combination of classes (though only 1 class per course, naturally; one iteration for each course should also be "no class" if it isn't mandatory; first global iteration should be just the mandatory courses, to ensure that they aren't contradictory), keep that combination only if there isn't any class overlap and if all the user's configuration inputs are satisfied. (Depending on how the configuration is designed, giving it a score may be more appropriate than removing the combination entirely, if the classes don't overlap.)
 	
 Sorting Schedules:
 	By...
-	> Start time (when first class starts): add up the start times for each day of the week then average
-	> End time (when last class lets out): same
-	> Number of credits
-	> See "Nice Additional Features" for more possibilities
-
-Saving Results / Output:
-	☐	
+	☐	Start time (when first class starts): add up the start times for each day of the week then average
+	☐	End time (when last class lets out): same
+	☐	Number of credits
+	☐	Allow at least primary and secondary sort (both visible to the user)
+	>	See "Nice Additional Features" for more possibilities
 
 --- ✄ -----------------------
 Nice Additional Features:
 --- ✄ -----------------------
+
+Automatically Exclude Classes with Closed Seats:
+	Requires user to log in
+	☐	Automatically check seat status and either exclude such classes or prioritize schedules that have open seats for all included classes
 		
-Professor Exclusion:
-	Prioritizes schedules that do not contain a particular professor
-	> Can create a list of professors after the classes have been entered in
-	☐	Show user list of professor options in the format:
-		Course 1: Professors for that course
-		Course 2: and so on
-	☐	Allow users to exclude or mandate professors
+Professor Preferences:
+	Prioritizes schedules that do or do not contain a particular professor
+	☐	Have a button to open up the Professor List (below the place where courses are entered)
+	☐	When the button is pressed, the course data is fetched (from the cache or online) and then displayed in the format:
+			Course 1: Professor1a     Course 2: Professor2a     Course 3: Professor3a
+			          Professor1b               Professor2b               Professor3b
+			          Professor1c                                         Professor3c
+
+			Course 4: ETC
+			(ie display is 3 courses wide, to prevent the need for a horizontal scrollbar)
+	☐	Users can then mandate or exclude professors (or prioritize/deprioritize) by clicking the professor's name repeatedly (to cycle through "mandate", "exclude", "normal"). These are course-specific mandations/exclusions.
+	☐	(Advanced) Allow professor blacklist
 	
 Time Exclusion:
 	Prioritizes schedules that leave open a particular time range on particular day(s) of the week
