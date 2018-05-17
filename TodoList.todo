@@ -47,47 +47,47 @@ Sorting Schedules:
 
 --- ✄ -----------------------
 Nice Additional Features:
+	in order of priority/urgency
 --- ✄ -----------------------
-
-Automatically Exclude Classes with Closed Seats:
-	Requires user to log in
-	☐	Automatically check seat status and either exclude such classes or prioritize schedules that have open seats for all included classes
 		
 Professor Preferences:
-	Prioritizes schedules that do or do not contain a particular professor
-	☐	Have a button to open up the Professor List (below the place where courses are entered)
+	Allows removal of specific sections from the scheduler
+	☐	Have a button to open up the Section List (below the place where courses are entered)
 	☐	When the button is pressed, the course data is fetched (from the cache or online) and then displayed in the format:
-			Course 1: Professor1a     Course 2: Professor2a     Course 3: Professor3a
-			          Professor1b               Professor2b               Professor3b
-			          Professor1c                                         Professor3c
-
-			Course 4: ETC
-			(ie display is 3 courses wide, to prevent the need for a horizontal scrollbar)
-	☐	Users can then mandate or exclude professors (or prioritize/deprioritize) by clicking the professor's name repeatedly (to cycle through "mandate", "exclude", "normal"). These are course-specific mandations/exclusions.
+			Course 1 Sec 1: [professor(s)]	[class meet days]		[start time]	[end time]		[warnings]
+						Sec 2: [prof2]
+						
+			Course 2 Sec 1: etc
+	☐	Can select or deselect each section (all are checked to start with)
+	☐	Warnings is a control that appears when the section has warnings, like location or controlled enrollment, and clicking it or hovering over it will show the information
 	☐	(Advanced) Allow professor blacklist
-	
-Time Exclusion:
-	Prioritizes schedules that leave open a particular time range on particular day(s) of the week
-	> E.g. no 8 am's, no evening classes, etc.
 	
 Select/Deselect Schedules:
 	Allow user to give themselves visual clues as to which schedules they like and dislike
 	> Could grey out and move to the bottom of the list if they "deselect" a schedule that they don't like
 	> Could highlight and move to the top/dedicated place on the side if they like a particular schedule
 	
+Time Exclusion:
+	Prioritizes schedules that leave open a particular time range on particular day(s) of the week
+	> E.g. no 8 am's, no evening classes, etc.
+	
 Course Blocks: 
 	Can separate courses into blocks and do actions on each block (like specifying minimum credits)
 	> E.g. Useful if you must take 2 courses from 3 options, and then the rest are electives
-
-Meal Break:
-	Prioritizes schedules that accommodate lunch breaks.
-	☐	Allow user to specify lunch break minimum start/end times and minimum duration
 
 Buddy System:
 	Add a friend's schedule information to see which classes you could take together
 	☐	Allow exporting of results to a file (that said friend could send to the user)
 	☐	Allow importing these results
 	☐	Look for shared classes amongst the possibilities
+
+Automatically Exclude Classes with Closed Seats:
+	Requires user to log in
+	☐	Automatically check seat status and either exclude such classes or prioritize schedules that have open seats for all included classes
+
+Meal Break:
+	Prioritizes schedules that accommodate lunch breaks.
+	☐	Allow user to specify lunch break minimum start/end times and minimum duration
 
 Maximum Consecutive Class Time:
 	Avoids schedules that have more than a specified number of hours of classes in a row

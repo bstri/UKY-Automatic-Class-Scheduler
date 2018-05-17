@@ -1,25 +1,29 @@
-import requests
-import getpass
-from lxml import html
+from ConfigurationData import ConfigurationData
+from CourseInput import CourseInput
+from CourseInfo import CourseInfo
+from WebsiteInterface import WebsiteInterface
 
-URL = "https://myuk.uky.edu/irj/portal"
-HIDDEN_NAMES = ["login_submit", "login_do_redirect", "no_cert_storing", "j_salt"]
-
-session = requests.Session()
-# Make the webpage think we're using Chrome
-session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
-
-# populate hidden fields with current values
-r = session.get(URL)
-tree = html.fromstring(r.text)
-hiddenDict = {}
-for name in HIDDEN_NAMES:
-	toFind = "//input[@name='{0}']/@value".format(name)
-	hiddenDict[name] = tree.xpath(toFind)[0]
-
-usr = input("Enter linkblue ID (myuk username): ")
-pwd = getpass.getpass("Enter password: ")
-r = session.post(URL, data = hiddenDict.update({"j_username": usr, "j_password": pwd}))
-# username and password no longer needed
-del pwd 
-del usr
+'''config;
+with open("courses.txt", "r") as f:
+	for i,line in enumerate(f):
+		if i == 0:
+			lower = WebsiteInterface.MinCreditDefault
+			upper = WebsiteInterface.MaxCreditDefault
+			index = line.find('-')
+			if index > 0:
+				lower = int(line[:index])
+			if len(line) > index + 1:
+				upper = int(line[index + 1:])
+			config = ConfigurationData("Fall", 2018, lower, upper)
+		else:
+			config.AddCourse(CourseInput.Parse(line))
+'''
+iWebsite = WebsiteInterface()
+iWebsite.RequestInfoAboutCourse(CourseInput("ma", 322), "Fall", 2018)
+'''
+for course in config.CourseInput:
+	info = iWebsite.RequestInfoAboutCourse(course, config.Semester, config.Year)
+	if type(info) is str:
+		print("Error occurred when getting info for ", course, ": \n", info)
+		return
+	'''
