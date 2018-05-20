@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 requests = "*"
 lxml = "*"
+pytest = "*"
 
 [dev-packages]
 lxml = "*"

@@ -1,5 +1,5 @@
 class CourseInput:
-	"""Represents what the user has input regarding a specific course."""
+	'''Represents what the user has input regarding a specific course.'''
 	
 	@staticmethod
 	def Parse(string):
@@ -14,22 +14,17 @@ class CourseInput:
 		argList.append(string)
 		return CourseInput(*argList)
 	
-	def __init__(self, coursePrefix, courseNumber, sectionNumber=None, mandatory=False):
-		self.CoursePrefix = coursePrefix
+	def __init__(self, coursePrefix, courseNumber, sectionNumbers=None, mandatory=False):
+		self.CoursePrefix = coursePrefix.upper()
 		self.CourseNumber = courseNumber
 		self.Mandatory = mandatory
-		self.SectionNumbers = [sectionNumber]
+		self.SectionNumbers = sectionNumbers and set(sectionNumbers) or set()
 		
 	def __repr__(self):
 		'''Allows printing of courses'''
-		return self.CoursePrefix + str(self.CourseNumber) + '-' + ','.join(self.SectionNumbers) + ' ' + str(self.mandatory)
+		return "{}{}-{}{}".format(self.CoursePrefix, str(self.CourseNumber), ','.join(self.SectionNumbers), self.mandatory and " (Mandatory)" or "")
+
+	def SameCourseAs(self, otherCourse):
+		return (self.CoursePrefix == otherCourse.CoursePrefix and
+			self.CourseNumber == otherCourse.CourseNumber)
 		
-	def __eq__(self, otherCourse):
-		'''Allows comparison of courses'''
-		return self.CoursePrefix == otherCourse.CoursePrefix and self.CourseNumber == otherCourse.CourseNumber
-		
-'''		
-print(CourseInput('ma', 123))
-print(CourseInput.Parse("ma 123"))
-print(CourseInput.Parse("ma 123 001 True"))
-'''

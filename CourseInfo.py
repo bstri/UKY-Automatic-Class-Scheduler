@@ -1,5 +1,5 @@
 class CourseInfo:
-	"""Info retrieved about a course"""
+	'''Info retrieved about a course'''
 	
 	def __init__(self, prefix, number, minCredits, maxCredits):
 		self.CoursePrefix = prefix
