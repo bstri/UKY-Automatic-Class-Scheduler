@@ -6,7 +6,7 @@ from SectionInfo import SectionInfo
 from ClassMeeting import ClassMeeting
 
 class WebsiteInterface:
-	''''''
+	""""""
 	
 	MinCreditDefault = 12
 	MaxCreditDefault = 21

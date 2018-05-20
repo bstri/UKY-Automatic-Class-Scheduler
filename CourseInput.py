@@ -3,7 +3,7 @@ class CourseInput:
 	
 	@staticmethod
 	def Parse(string):
-		'''Turns a string of space delimited info into a CourseInput'''
+		"""Turns a string of space delimited info into a CourseInput"""
 		argList = []
 		index = string.find(' ')
 		while index != -1:
@@ -13,28 +13,29 @@ class CourseInput:
 		argList.append(string)
 		return CourseInput(*argList)
 	
-	def __init__(self, coursePrefix, courseNumber, mandatory=False):
-		self.CoursePrefix = coursePrefix
+	def __init__(self, coursePrefix, courseNumber, sectionNumbers=None, mandatory=False):
+		self.CoursePrefix = coursePrefix.upper()
 		self.CourseNumber = courseNumber
 		self.Mandatory = mandatory
-		self.SectionNumbers = []
+		self.SectionNumbers = sectionNumbers and set(sectionNumbers) or set()
 		
 	def __repr__(self):
-		'''Allows printing of courses'''
-		return self.CoursePrefix + str(self.CourseNumber) + '-' + str(self.SectionNumber) + ' ' + str(self.mandatory)
+		"""Allows printing of courses"""
+		return "{}{}-{}{}".format(self.CoursePrefix, str(self.CourseNumber), str(self.SectionNumbers), self.mandatory and " (Mandatory)" or "")
 		
 	def __eq__(self, otherCourse):
-		'''Allows comparison of courses
+		"""Allows comparison of courses"""
+		return (self.CoursePrefix == otherCourse.CoursePrefix and
+			self.CourseNumber == otherCourse.CourseNumber and
+			self.SectionNumbers == otherCourse.SectionNumbers and
+			self.Mandatory == otherCourse.Mandatory)
+
+	def SameCourseAs(self, otherCourse):
+		return (self.CoursePrefix == otherCourse.CoursePrefix and
+			self.CourseNumber == otherCourse.CourseNumber)
 		
-		courses must have the same prefix and number to be equal, and as long as one's section is a subset of the other's, it will also return true
-		'''
-		return self.CoursePrefix == otherCourse.coursePrefix and self.CourseNumber == otherCourse.courseNumber and (not self.SectionNumber or not otherCourse.sectionNumber or self.SectionNumber == otherCourse.sectionNumber)
-		
-	def AddSectionNumber(self, n):
-		self.SectionNumbers
-		
-'''		
+"""		
 print(CourseInput('ma', 123))
 print(CourseInput.Parse("ma 123"))
 print(CourseInput.Parse("ma 123 001 True"))
-'''
+"""
