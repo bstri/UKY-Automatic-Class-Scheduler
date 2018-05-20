@@ -18,14 +18,11 @@ class ConfigurationData:
 		if self.MinCredits > self.MaxCredits:
 			return "Min Credits must not be greater than Max Credits"
 	
-	def AtCourseLimit(self):
-		return len(self.CourseInput) == HardCourseNumberMaximum
-
 	def AddCourse(self, courseInput):
-		if any(c.SameCourseAs(courseInput) for c in self.CourseInput):
+		'''Attempt to add the course, returning a message if there's a problem or None otherwise.'''
+		if any(c.Course == courseInput.Course for c in self.CourseInput):
 			return 'Course already added'
-		if self.AtCourseLimit():
+		if len(self.CourseInput) == HardCourseNumberMaximum:
 			return 'Course maximum reached'
 		self.CourseInput.append(courseInput)
-		return True
 		

@@ -13,6 +13,7 @@ Questions:
 		✔	Can we ask the server for a "last modified date" without getting all the other information back? > NO @done (18-05-15 23:39)
 		1. Save cache for up to 12 hours with refresh button to override
 		2. Save cache for up to a month, but also attempt to update it if the user requests schedules and it's been more than 30 minutes -- if an "estimated time left" for all requests to finish is more than a few seconds AND there is no information not available in the cache AND any information already downloaded didn't change compared to what was already in the cache, show the user a "cancel fetching most recent information" button
+	☐	Does there really need to be a HardCourseNumberMaximum?
 
 Configuration Input:
 	☐	Specify year/semester (default based on current date)
@@ -111,3 +112,5 @@ Professor Ratings:
 --- ✄ -----------------------
 Specific Files/Systems Todos:
 --- ✄ -----------------------
+CourseInput:
+	☐	Delete CourseInput.Parse when no longer needed (and the tests for it)
