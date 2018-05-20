@@ -49,8 +49,12 @@ Sorting Schedules:
 Nice Additional Features:
 	in order of priority/urgency
 --- ✄ -----------------------
+
+Prevent TBD Classes:
+	Allows exclusion of classes that have TBD professor, location, or meeting times
+	> Would appear as 3 checkboxes 'Allow TBD ___' all checked by default
 		
-Professor Preferences:
+Section Chooser:
 	Allows removal of specific sections from the scheduler
 	☐	Have a button to open up the Section List (below the place where courses are entered)
 	☐	When the button is pressed, the course data is fetched (from the cache or online) and then displayed in the format:
@@ -58,7 +62,7 @@ Professor Preferences:
 						Sec 2: [prof2]
 						
 			Course 2 Sec 1: etc
-	☐	Can select or deselect each section (all are checked to start with)
+	☐	Can select or deselect each section (all are checked to start with, unless a specific section was entered)
 	☐	Warnings is a control that appears when the section has warnings, like location or controlled enrollment, and clicking it or hovering over it will show the information
 	☐	(Advanced) Allow professor blacklist
 	
@@ -74,6 +78,7 @@ Time Exclusion:
 Course Blocks: 
 	Can separate courses into blocks and do actions on each block (like specifying minimum credits)
 	> E.g. Useful if you must take 2 courses from 3 options, and then the rest are electives
+	> "Couple" courses that must either both be taken, or neither
 
 Buddy System:
 	Add a friend's schedule information to see which classes you could take together

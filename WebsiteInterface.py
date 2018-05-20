@@ -1,12 +1,10 @@
 import requests
 from lxml import html
 import datetime
-from CourseInfo import CourseInfo
-from SectionInfo import SectionInfo
-from ClassMeeting import ClassMeeting
+from CourseInfo import CourseInfo, SectionInfo, ClassMeeting
 
 class WebsiteInterface:
-	''''''
+	'''Fetches course data from the online course catalog'''
 	
 	MinCreditDefault = 12
 	MaxCreditDefault = 21
@@ -25,13 +23,12 @@ class WebsiteInterface:
 		# Make the webpage think we're using Chrome
 		self.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
 		
-	def RequestInfoAboutCourse(self, courseInput, semester, year):
-		prefix = courseInput.CoursePrefix.upper()
-		courseNum = str()
+	def RequestInfoAboutCourse(self, coursePrefix, courseNumber, semester, year):
+		coursePrefix = coursePrefix.upper()
 		'''r = session.post("https://myuk.uky.edu/zAPPS/CourseCatalog/Offering", data = {
-			"CoursePrefix": courseInput.CoursePrefix.upper(),
-			"CourseNumber": str(courseInput.CourseNumber),
-			"CourseSection": str(courseInput.SectionNumber or ''),
+			"CoursePrefix": coursePrefix,
+			"CourseNumber": str(courseNumber)),
+			"CourseSection": "",
 			"Year": str(year + (semester == "Fall" and 1 or 0)),
 			"Period": semester == "Fall" and "010" or "030",
 			"SearchTerms": "",
@@ -42,45 +39,65 @@ class WebsiteInterface:
 			"HasDistanceSections": "false"})'''
 		
 		#tree = html.fromstring(r.text.replace('\\','')) 
-		with open('EGR103Info.html', 'r') as f:
+		with open(coursePrefix + str(courseNumber) + 'Info.html', 'r') as f:
 			tree = html.fromstring(f.read())
-			goodTerm = tree.xpath("//div/@data-offered-in-specified-term")[0]
-			if goodTerm != "True":
-				return "Invalid term. Please choose a different year and/or semester."
-			courseInfo = CourseInfo()
-			sections = tree.xpath('//div[starts-with(@class,"table-thin-row small filterable")]')
-			for element in sections:
-				classVal = element.xpath("div[1]/@class")
-				if "course-cancelled" in classVal:
+		container = tree.xpath('div[@class="course-container"]')[0]
+		
+		# make sure we can actually get the course catalog for this term
+		goodTerm = container.xpath("@data-offered-in-specified-term")[0]
+		if goodTerm != "True":
+			return "Invalid term. Please choose a different year and/or semester."
+		
+		credits = container.xpath('div/div/div/div/h5/span[2]/span/text()')[0] # Two forms: '3.0 Credits' ; '1.0 - 2.0 (variable) Credits'
+		minC = int(credits[0])
+		if '-' in credits:
+			maxC = int(credits[6])
+		else:
+			maxC = minC
+		
+		# prep courseInfo (which will be returned)
+		courseInfo = CourseInfo(coursePrefix, courseNumber, minC, maxC)
+		
+		sections = container.xpath('div/div[starts-with(@class,"table-thin-row small filterable")]')
+		for section in sections:
+			# skip this section if it has been cancelled
+			classVal = section.xpath("div[1]/@class")[0]
+			if "course-cancelled" in classVal: 
+				continue
+			
+			# different meetings might be lecture, lab, recitation, etc.
+			meetings = section.xpath('div[starts-with(@class,"clearfix course-row expanded-section table-thin-row-event")]')
+			
+			sectionNumber = int(meetings[0].xpath("(.//a)[1]/text()")[0])
+			sectionInfo = courseInfo.AddSection(sectionNumber)
+			
+			# warnings might be location warnings or controlled enrollment warnings
+			warnings = section.xpath('div[starts-with(@class,"clearfix course-row expanded-section table-thin-row-event")]/p/descendant::text()')
+			sectionInfo.Warnings = warnings
+			
+			for meeting in meetings:
+				location = meeting.xpath('div[@class="pull-left"][@style="width: 170px;"]/div/descendant::text()')
+				strLocation = ' '.join(location) # often will have building followed by room number
+				if location[0] == "TBD":
+					sectionInfo.WarnTBDLocation()
+				
+				professor = meeting.xpath('div[@class="pull-left"][@style="width: 130px;"]/div/text()')[0]
+				if professor == "TBD":
+					sectionInfo.WarnTBDProfessor()
+				
+				daysAndTime = meeting.xpath('div[@class="pull-left"][@style="width: 140px;"]/div/text()')
+				if daysAndTime[0] == "TBD":
+					sectionInfo.WarnTBDTimes()
 					continue
-				warnings = element.xpath('div[starts-with(@class,"clearfix course-row expanded-section table-thin-row-event")]/p/text()')
-				meetings = element.xpath('div[starts-with(@class,"clearfix course-row expanded-section table-thin-row-event")]')
-				sectionNumber = meetings[0].xpath("a")
-				sectionInfo = SectionInfo(int(sectionNumber))
-				sectionInfo.Warnings = warnings
-				print(sectionNumber)
-				for meeting in meetings:
-					location = meeting.xpath('div[@class="pull-left"][@style="width: 170px;"]/div')
-					strLocation = ''
-					for l in location:
-						strLocation += l.xpath('/text()')
-					print(strLocation)
-					professor = meeting.xpath('div[@class="pull-left"][@style="width: 130px;"]/div/text()')[0]
-					daysAndTime = meeting.xpath('div[@class="pull-left"][@style="width: 140px;"]/div/text()')
-					if daysAndTime[0] == "TBD":
-						sectionInfo.Warnings.append("NOTE: This section has some TBD meeting times.")
-						continue
-					days = daysAndTime[0]
-					print(days)
-					timeframe = daysAndTime[1]
-					print(timeframe)
-					startTime = timeframe[:timeframe.find(' -')]
-					endTime = timeframe[timeframe.find('-') + 2:]
-					startDateTime = datetime.datetime.strptime(startTime, "%I:%M %p")
-					endDateTime = datetime.datetime.strptime(startTime, "%I:%M %p")
-					duration = endDateTime - startDateTime
-					for day in days:
-						classMeeting = ClassMeeting(day, startDateTime, duration, strLocation, professor)
-						sectionInfo.AddClassMeeting(classMeeting)
-						
+				days = daysAndTime[0]
+				timeframe = daysAndTime[1] # of the form '9:00 am - 9:50 am' for example
+				startTime = timeframe[:timeframe.find(' -')]
+				endTime = timeframe[timeframe.find('-') + 2:]
+				startDateTime = datetime.datetime.strptime(startTime, "%I:%M %p")
+				endDateTime = datetime.datetime.strptime(endTime, "%I:%M %p")
+				duration = endDateTime - startDateTime
+				for day in days:
+					classMeeting = ClassMeeting(day, startDateTime, duration, strLocation, professor)
+					sectionInfo.AddClassMeeting(classMeeting)
 					
+		return courseInfo

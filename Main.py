@@ -1,9 +1,9 @@
 from ConfigurationData import ConfigurationData
 from CourseInput import CourseInput
-from CourseInfo import CourseInfo
 from WebsiteInterface import WebsiteInterface
 
-'''config;
+iWebsite = WebsiteInterface()
+infoList = []
 with open("courses.txt", "r") as f:
 	for i,line in enumerate(f):
 		if i == 0:
@@ -16,14 +16,14 @@ with open("courses.txt", "r") as f:
 				upper = int(line[index + 1:])
 			config = ConfigurationData("Fall", 2018, lower, upper)
 		else:
-			config.AddCourse(CourseInput.Parse(line))
-'''
-iWebsite = WebsiteInterface()
-iWebsite.RequestInfoAboutCourse(CourseInput("ma", 322), "Fall", 2018)
-'''
-for course in config.CourseInput:
-	info = iWebsite.RequestInfoAboutCourse(course, config.Semester, config.Year)
-	if type(info) is str:
-		print("Error occurred when getting info for ", course, ": \n", info)
-		return
-	'''
+			c = CourseInput.Parse(line)
+			failure = config.AddCourse(c)
+			if failure:
+				print(failure)
+				continue
+			info = iWebsite.RequestInfoAboutCourse(c.CoursePrefix, c.CourseNumber, config.Semester, config.Year)
+			if type(info) is str:
+				print("Error occurred when getting info for ", c, ": \n", info)
+				continue
+			infoList.append(info)
+

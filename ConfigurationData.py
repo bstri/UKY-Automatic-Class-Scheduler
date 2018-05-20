@@ -6,8 +6,8 @@ class ConfigurationData:
 	HardCourseNumberMaximum = 15
 	
 	def __init__(self, semester=None, year=None, minCredits=None, maxCredits=None):
-		self.MinCredits = max(HardCreditMinimum, minCredits)
-		self.MaxCredits = min(HardCreditMaximum, maxCredits)
+		self.MinCredits = max(self.HardCreditMinimum, minCredits)
+		self.MaxCredits = min(self.HardCreditMaximum, maxCredits)
 		self.CourseInput = []
 		self.Year = year
 		self.Semester = semester
@@ -19,8 +19,10 @@ class ConfigurationData:
 			return "Min Credits must not be greater than Max Credits"
 	
 	def AddCourse(self, courseInput):
-		if self.courseCount == HardCourseNumberMaximum:
-			return -1
-		courseCount += 1
+		if courseInput in self.CourseInput:
+			return 'Course already added'
+		if self.courseCount == self.HardCourseNumberMaximum:
+			return 'Course maximum reached'
+		self.courseCount += 1
 		self.CourseInput.append(courseInput)
 		
