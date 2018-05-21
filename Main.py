@@ -24,7 +24,7 @@ with open("courses.txt", "r") as f:
 			if failure:
 				print(failure)
 				continue
-			info = iWebsite.RequestInfoAboutCourse(c.CoursePrefix, c.CourseNumber, config.Semester, config.Year)
+			info = iWebsite.RequestInfoAboutCourse(c.Course, config.Semester, config.Year)
 			if type(info) is str:
 				print("Error occurred when getting info for ", c, ": \n", info)
 				continue
