@@ -20,7 +20,7 @@ class CourseInput:
 	@staticmethod
 	def Parse(string):
 		'''Turns a string of space delimited info into a CourseInput'''
-		string = string.rstrip()
+		string = string.rstrip() # gets rid of trailing newline
 		argList = []
 		index = string.find(' ')
 		while index != -1:

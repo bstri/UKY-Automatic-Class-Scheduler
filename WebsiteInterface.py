@@ -49,14 +49,12 @@ class WebsiteInterface:
 			return "Invalid term. Please choose a different year and/or semester."
 		
 		credits = container.xpath('div/div/div/div/h5/span[2]/span/text()')[0] # Two forms: '3.0 Credits' ; '1.0 - 2.0 (variable) Credits'
-		minC = int(credits[0])
+		numC = int(credits[0])
 		if '-' in credits:
-			maxC = int(credits[6])
-		else:
-			maxC = minC
+			return "Variable credit hour classes not supported."
 		
 		# prep courseInfo (which will be returned)
-		courseInfo = CourseInfo(coursePrefix, courseNumber, minC, maxC)
+		courseInfo = CourseInfo(coursePrefix, courseNumber, numC)
 		
 		sections = container.xpath('div/div[starts-with(@class,"table-thin-row small filterable")]')
 		for section in sections:
@@ -95,9 +93,8 @@ class WebsiteInterface:
 				endTime = timeframe[timeframe.find('-') + 2:]
 				startDateTime = datetime.datetime.strptime(startTime, "%I:%M %p")
 				endDateTime = datetime.datetime.strptime(endTime, "%I:%M %p")
-				duration = endDateTime - startDateTime
 				for day in days:
-					classMeeting = ClassMeeting(day, startDateTime, duration, strLocation, professor)
+					classMeeting = ClassMeeting(day, startDateTime, endDateTime, strLocation, professor)
 					sectionInfo.AddClassMeeting(classMeeting)
 					
 		return courseInfo
