@@ -21,15 +21,15 @@ def dur(s): # ex, s="11:20"
 	return timedelta(hours=int(s[0:i]), minutes=int(s[i+1:]))
 
 def test_ClassMeetingOverlapsSame():
-	args = ["M", time("9:30"), dur("2:00"), "loc", "prof"]
+	args = ["M", time("9:30"), time("11:30"), "loc", "prof"]
 	assert ClassMeeting(*args).OverlapsWith(ClassMeeting(*args)) is True
 
 def test_ClassMeetingOverlaps():
 	args = []
-	assert (ClassMeeting("M", time("9:30"), dur("2:00"), "loc", "prof").OverlapsWith(
-		ClassMeeting("M", time("10:30"), dur("0:30"), "loc2", "prof2"))) is True
+	assert (ClassMeeting("M", time("9:30"), time("11:30"), "loc", "prof").OverlapsWith(
+		ClassMeeting("M", time("10:30"), time("11:00"), "loc2", "prof2"))) is True
 
 def test_ClassMeetingOverlapsDifDays():
 	args = []
-	assert (ClassMeeting("M", time("9:30"), dur("2:00"), "loc", "prof").OverlapsWith(
-		ClassMeeting("T", time("10:30"), dur("0:30"), "loc2", "prof2"))) is False
+	assert (ClassMeeting("M", time("9:30"), time("11:30"), "loc", "prof").OverlapsWith(
+		ClassMeeting("T", time("10:30"), time("11:00"), "loc2", "prof2"))) is False
