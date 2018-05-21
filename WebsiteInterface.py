@@ -1,7 +1,7 @@
 import requests
 from lxml import html
 import datetime
-from CourseInfo import CourseInfo, SectionInfo, ClassMeeting
+from Courses import CourseInfo, SectionInfo, ClassMeeting
 
 class WebsiteInterface:
 	'''Fetches course data from the online course catalog'''
@@ -23,10 +23,9 @@ class WebsiteInterface:
 		# Make the webpage think we're using Chrome
 		self.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
 		
-	def RequestInfoAboutCourse(self, coursePrefix, courseNumber, semester, year):
-		coursePrefix = coursePrefix.upper()
+	def RequestInfoAboutCourse(self, course, semester, year):
 		'''r = session.post("https://myuk.uky.edu/zAPPS/CourseCatalog/Offering", data = {
-			"CoursePrefix": coursePrefix,
+			"CoursePrefix": course.Prefix,
 			"CourseNumber": str(courseNumber)),
 			"CourseSection": "",
 			"Year": str(year + (semester == "Fall" and 1 or 0)),
@@ -39,7 +38,7 @@ class WebsiteInterface:
 			"HasDistanceSections": "false"})'''
 		
 		#tree = html.fromstring(r.text.replace('\\','')) 
-		with open(coursePrefix + str(courseNumber) + 'Info.html', 'r') as f:
+		with open(course.Prefix + str(course.Number) + 'Info.html', 'r') as f:
 			tree = html.fromstring(f.read())
 		container = tree.xpath('div[@class="course-container"]')[0]
 		
@@ -56,7 +55,7 @@ class WebsiteInterface:
 			maxC = minC
 		
 		# prep courseInfo (which will be returned)
-		courseInfo = CourseInfo(coursePrefix, courseNumber, minC, maxC)
+		courseInfo = CourseInfo(course, minC, maxC)
 		
 		sections = container.xpath('div/div[starts-with(@class,"table-thin-row small filterable")]')
 		for section in sections:

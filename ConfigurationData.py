@@ -1,4 +1,5 @@
 from WebsiteInterface import WebsiteInterface
+
 class ConfigurationData:
 	'''Represents a user's input to the program.'''
 	
