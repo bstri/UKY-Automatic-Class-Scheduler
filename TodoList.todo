@@ -57,8 +57,7 @@ Prevent TBD Classes:
 		
 Section Chooser:
 	Allows removal of specific sections from the scheduler
-	☐	Have a button to open up the Section List (below the place where courses are entered)
-	☐	When the button is pressed, the course data is fetched (from the cache or online) and then displayed in the format:
+	☐	Have a Show Sections button next to each course as it is added. Clicking this button will expand the course vertically into its sections:
 			Course 1 Sec 1: [professor(s)]	[class meet days]		[start time]	[end time]		[warnings]
 						Sec 2: [prof2]
 						

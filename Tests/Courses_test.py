@@ -2,7 +2,7 @@ import sys, os
 sys.path.append("E:\\GitHub\\UKY-Automatic-Class-Scheduler")
 
 from Courses import *
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def equal(ci, course, sections=None, mandatory=False):
 	assert ci.Course == course
@@ -16,20 +16,16 @@ def test_ParseSimple():
 def time(s): # ex, s="15:30"
 	return datetime.strptime(s, "%H:%M")
 
-def dur(s): # ex, s="11:20"
-	i = s.find(":")
-	return timedelta(hours=int(s[0:i]), minutes=int(s[i+1:]))
-
 def test_ClassMeetingOverlapsSame():
-	args = ["M", time("9:30"), dur("2:00"), "loc", "prof"]
+	args = ["M", time("9:30"), time("11:30"), "loc", "prof"]
 	assert ClassMeeting(*args).OverlapsWith(ClassMeeting(*args)) is True
 
 def test_ClassMeetingOverlaps():
 	args = []
-	assert (ClassMeeting("M", time("9:30"), dur("2:00"), "loc", "prof").OverlapsWith(
-		ClassMeeting("M", time("10:30"), dur("0:30"), "loc2", "prof2"))) is True
+	assert (ClassMeeting("M", time("9:30"), time("11:30"), "loc", "prof").OverlapsWith(
+		ClassMeeting("M", time("10:30"), time("11:00"), "loc2", "prof2"))) is True
 
 def test_ClassMeetingOverlapsDifDays():
 	args = []
-	assert (ClassMeeting("M", time("9:30"), dur("2:00"), "loc", "prof").OverlapsWith(
-		ClassMeeting("T", time("10:30"), dur("0:30"), "loc2", "prof2"))) is False
+	assert (ClassMeeting("M", time("9:30"), time("11:30"), "loc", "prof").OverlapsWith(
+		ClassMeeting("T", time("10:30"), time("11:00"), "loc2", "prof2"))) is False

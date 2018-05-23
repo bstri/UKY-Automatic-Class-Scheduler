@@ -53,7 +53,7 @@ class WebsiteInterface:
 			return "Variable credit hour classes not supported."
 		
 		# prep courseInfo (which will be returned)
-		courseInfo = CourseInfo(course, minC, maxC)
+		courseInfo = CourseInfo(course, numC)
 		
 		sections = container.xpath('div/div[starts-with(@class,"table-thin-row small filterable")]')
 		for section in sections:

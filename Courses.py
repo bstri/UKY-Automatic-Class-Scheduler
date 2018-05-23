@@ -58,6 +58,9 @@ class CourseInfo:
 		self.Sections.append(s)
 		return s
 		
+	def __str__(self):
+		return "{}-{}".format(self.Course, ",".join(map(str, sorted(s.SectionNumber for s in self.Sections))))
+		
 class SectionInfo:
 	'''Info about a section of a course'''
 	
@@ -75,8 +78,8 @@ class SectionInfo:
 		
 	def AddClassMeeting(self, meeting):
 		self.ClassMeetings.append(meeting)
-		if not self.EarlyTime or self.EarlyTime > meeting.Time:
-			self.EarlyTime = meeting.Time
+		if not self.EarlyTime or self.EarlyTime > meeting.StartTime:
+			self.EarlyTime = meeting.StartTime
 		if not self.LateTime or self.LateTime < meeting.EndTime:
 			self.LateTime = meeting.EndTime
 		
@@ -103,7 +106,7 @@ class ClassMeeting:
 	
 	def __init__(self, dayOfWeek, startTime, endTime, location, professor):
 		self.Day = dayOfWeek
-		self.StartTime = time # datetime.datetime (is to always refer to January 1st, 1900, as is provided by default by datetime.strptime)
+		self.StartTime = startTime # datetime.datetime (is to always refer to January 1st, 1900, as is provided by default by datetime.strptime)
 		self.EndTime = endTime
 		self.Duration = endTime - startTime # datetime.timedelta
 		self.Location = location

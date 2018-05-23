@@ -23,7 +23,7 @@ class ConfigurationData:
 		'''Attempt to add the course, returning a message if there's a problem or None otherwise.'''
 		if any(c.Course == courseInput.Course for c in self.CourseInput):
 			return 'Course already added'
-		if len(self.CourseInput) == HardCourseNumberMaximum:
+		if len(self.CourseInput) == self.HardCourseNumberMaximum:
 			return 'Course maximum reached'
 		self.CourseInput.append(courseInput)
 		
