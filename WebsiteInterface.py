@@ -24,9 +24,9 @@ class WebsiteInterface:
 		self.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
 		
 	def RequestInfoAboutCourse(self, course, semester, year):
-		'''r = session.post("https://myuk.uky.edu/zAPPS/CourseCatalog/Offering", data = {
+		r = self.session.post("https://myuk.uky.edu/zAPPS/CourseCatalog/Offering", data = {
 			"CoursePrefix": course.Prefix,
-			"CourseNumber": str(courseNumber)),
+			"CourseNumber": str(course.Number),
 			"CourseSection": "",
 			"Year": str(year + (semester == "Fall" and 1 or 0)),
 			"Period": semester == "Fall" and "010" or "030",
@@ -35,11 +35,9 @@ class WebsiteInterface:
 			"Is300LevelPlus": "false",
 			"IsVariableCredit": "false",
 			"HasPartOfTermSections": "false",
-			"HasDistanceSections": "false"})'''
+			"HasDistanceSections": "false"})
 		
-		#tree = html.fromstring(r.text.replace('\\','')) 
-		with open(course.Prefix + str(course.Number) + 'Info.html', 'r') as f:
-			tree = html.fromstring(f.read())
+		tree = html.fromstring(r.text.replace('\\','')) 
 		container = tree.xpath('div[@class="course-container"]')[0]
 		
 		# make sure we can actually get the course catalog for this term

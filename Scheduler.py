@@ -83,7 +83,7 @@ class ScheduleList:
 		for i,c in enumerate(reversed(optionalCourses)):
 			creditSum += c.NumCredits
 			if creditSum > maxCredits:
-				upperCombinationBound -= i
+				upperCombinationBound -= (i + 1)
 				break
 		if upperCombinationBound < lowerCombinationBound:
 			# e.g. 5-6 credits; [4,4,3]. Lower is 2 and upper is 1. No schedules are possible
@@ -105,4 +105,5 @@ class ScheduleList:
 	def __str__(self):
 		return '\n'.join(map(str, self.Schedules))
 		
-	
+	def SortByNumCredits(self, descending=False):
+		self.Schedules.sort(key=lambda s: s.NumCredits, reverse=descending)
