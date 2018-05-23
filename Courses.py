@@ -46,7 +46,7 @@ class CourseInput:
 		return "{}-{}{}".format(self.Course, ",".join(map(str, sorted(self.SectionNumbers))), self.Mandatory and " (Mandatory)" or "")
 
 class CourseInfo:
-	'''Info retrieved about a course'''
+	'''Info about a course'''
 	
 	def __init__(self, course, numCredits):
 		self.Course = course
