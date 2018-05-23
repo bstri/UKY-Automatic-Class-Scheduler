@@ -106,9 +106,9 @@ class ClassMeeting:
 	
 	def __init__(self, dayOfWeek, startTime, endTime, location, professor):
 		self.Day = dayOfWeek
-		self.StartTime = startTime # datetime.datetime (is to always refer to January 1st, 1900, as is provided by default by datetime.strptime)
+		self.StartTime = startTime # startTime and endTime are datetime.datetime (is to always refer to January 1st, 1900, as is provided by default by datetime.strptime)
 		self.EndTime = endTime
-		self.Duration = endTime - startTime # datetime.timedelta
+		self.Duration = endTime - startTime
 		self.Location = location
 		self.Professor = professor
 		

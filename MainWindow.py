@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import N, E, S, W
 ALL = N+E+S+W
 from Async import AddAsync
-from Entry import EntryLetters, EntryNumbers
+from Entry import EntryLetters, EntryNumbers, EntryRange
 
 _basePrint = print
 def print(*args):
@@ -46,32 +46,104 @@ class MainWindow(tk.Tk):
 		configureColumns(self, [1, 3, 1])
 		self.CourseInputFrame = grid(CourseInputFrame(self), row=1, column=1, sticky=ALL)
 
-def FrameWrap(self, cls):
-	frame = tk.Frame(self, highlightthickness=1, highlightbackground="orange", highlightcolor="blue")
-	grid(cls(frame))
-	return frame
+class MultiMessageStringVar():
+	'''Enable multiple independent messages to be contained within a single StringVar (named .Var).
+
+	Throughout this class, 'line' is a number. Line numbers do not need to be consecutive (or even integers).'''
+	def __init__(self, stringVar=None, delimiter="\n"):
+		self.lines = {}
+		self.Var = stringVar or tk.StringVar()
+		self.delimiter = delimiter
+
+	def Get(self, line):
+		return self.lines.get(line)
+
+	def GetAll(self):
+		return self.Var.get()
+
+	def update(self):
+		self.Var.set("\n".join(map(lambda n: self.lines[n], sorted(self.lines))))
+	
+	def Set(self, line, text):
+		if text:
+			self.lines[line] = text
+		else:
+			self.lines.pop(line, None)
+		self.update()
+
+	def Remove(self, line):
+		self.lines.pop(line, None)
+		self.update()
+
+	def Clear(self):
+		self.lines = {}
+		self.update()
 
 class CourseInputFrame(tk.Frame):
+	# The following are line numbers for the MultiMessageStringVar class
+	INPUT_ERROR_PREFIX = 1
+	INPUT_ERROR_NUMBER = 2
+	INPUT_ERROR_SECTIONS = 3
+	INPUT_ERROR_GENERAL = 4
+	INPUT_ERRORS = [INPUT_ERROR_PREFIX, INPUT_ERROR_NUMBER, INPUT_ERROR_SECTIONS, INPUT_ERROR_GENERAL]
+	WEB_ERROR = 5
 	def __init__(self, master=None):
 		super().__init__(master, borderwidth=2, relief="groove")
 		AddAsync(self)
-		# configureRows(self, [1, 3, 1])
-		# configureColumns(self, [1, 3, 1])
 		grid(tk.Label(self, text="Course Input"), sticky=W)
 		holder = grid(tk.Frame(self)) #, highlightthickness=1, highlightbackground="red", highlightcolor="red"), sticky=E+W)
-		configureColumns(holder, [3, 1, 3, 1, 3])
-		self.coursePrefix = grid(EntryLetters(holder), row=0, column=0)
-		self.courseNumber = grid(EntryNumbers(holder), row=0, column=2)
-		self.sectionNumber = grid(EntryNumbers(holder), row=0, column=4) # TODO allow commas and spaces?
+		#configureColumns(holder, [3, 1, 3, 1, 3]) # Note: This line doesn't do anything; instead, dummy labels are added below to force spacing
+		def bind(obj):
+			obj.bind("<Return>", self.EnterPressed)
+			return obj
+		self.coursePrefix = bind(grid(EntryLetters(holder), row=0, column=0))
+		grid(tk.Label(holder, text = "  "), row=0, column=1)
+		self.courseNumber = bind(grid(EntryNumbers(holder), row=0, column=2))
+		grid(tk.Label(holder, text = "  "), row=0, column=3)
+		self.sectionNumbers = bind(grid(EntryRange(holder), row=0, column=4))
+		self.errorMessages = MultiMessageStringVar()
+		grid(tk.Label(self, textvariable=self.errorMessages.Var, fg="red"), sticky=W)
 		#self.courseDisplay = grid(CourseDisplay(self), sticky=ALL)
-		# TODO when user presses enter in any of the above Entries, call EnterPressed
-	
-	def EnterPressed(self):
+
+	def clearInput(self):
+		self.coursePrefix.text = ""
+		self.courseNumber.text = ""
+		self.sectionNumbers.text = ""
+
+	def clearInputErrors(self):
+		for error in self.INPUT_ERRORS:
+			self.errorMessages.Remove(error)
+
+	def EnterPressed(self, event):
+		self.clearInputErrors()
+		if not self.coursePrefix.text and not self.courseNumber.text and not self.sectionNumbers.text:
+			# All textboxes clear, so:
+			self.master.focus()
+			return
+		# Ensure input coursePrefix/number textboxes have values and sectionNumbers are OK
+		errorSource = None
+		if not self.coursePrefix.text:
+			self.errorMessages.Set(self.INPUT_ERROR_PREFIX, "You must enter a course prefix")
+			errorSource = self.coursePrefix
+		if not self.courseNumber.text:
+			self.errorMessages.Set(self.INPUT_ERROR_NUMBER, "Course Prefix must have a value")
+			errorSource = errorSource or self.courseNumber
+		try:
+			sections = self.sectionNumbers.GetRange()
+		except ValueError as e:
+			num = e.args[1]
+			if num < 0:
+				self.errorMessages.Set(self.INPUT_ERROR_SECTIONS, "Section numbers cannot be negative (input: {})".format(num))
+			else:
+				self.errorMessages.Set(self.INPUT_ERROR_SECTIONS, "Section number '{}' is too large".format(num))
+			errorSource = errorSource or self.sectionNumbers
+		if errorSource:
+			errorSource.focus()
+			return
 		# See if coursePrefix/etc are in courseDisplay
 		# See if coursePrefix/etc are in cache
-		# Attempt to fetch data from website
-		# Update courseDisplay as needed
-		pass
+		# If anything went wrong, set INPUT_ERROR_GENERAL. Otherwise, clear all inputs and input errors
+		# Attempt to fetch data from website and update either courseDisplay or errorMessage.
 
 class CourseDisplay(tk.Frame):
 	pass
