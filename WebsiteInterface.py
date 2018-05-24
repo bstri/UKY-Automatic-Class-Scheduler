@@ -64,12 +64,13 @@ class WebsiteInterface:
 			meetings = section.xpath('div[starts-with(@class,"clearfix course-row expanded-section table-thin-row-event")]')
 			
 			sectionNumber = int(meetings[0].xpath("(.//a)[1]/text()")[0])
-			sectionInfo = courseInfo.AddSection(sectionNumber)
+			sectionInfo = SectionInfo(sectionNumber, course, numC)
 			
 			# warnings might be location warnings or controlled enrollment warnings
 			warnings = section.xpath('div[starts-with(@class,"clearfix course-row expanded-section table-thin-row-event")]/p/descendant::text()')
 			sectionInfo.Warnings = warnings
 			
+			allTBDTimes = True
 			for meeting in meetings:
 				location = meeting.xpath('div[@class="pull-left"][@style="width: 170px;"]/div/descendant::text()')
 				strLocation = ' '.join(location) # often will have building followed by room number
@@ -84,6 +85,7 @@ class WebsiteInterface:
 				if daysAndTime[0] == "TBD":
 					sectionInfo.WarnTBDTimes()
 					continue
+				allTBDTimes = False
 				days = daysAndTime[0]
 				timeframe = daysAndTime[1] # of the form '9:00 am - 9:50 am' for example
 				startTime = timeframe[:timeframe.find(' -')]
@@ -92,6 +94,10 @@ class WebsiteInterface:
 				endDateTime = datetime.datetime.strptime(endTime, "%I:%M %p")
 				for day in days:
 					classMeeting = ClassMeeting(day, startDateTime, endDateTime, strLocation, professor)
-					sectionInfo.AddClassMeeting(classMeeting)
+					sectionInfo.AddClassMeeting(classMeeting, day)
+			
+			# This is kind of arbitrary. I've seen some classes where a meeting with TBD time was meant to be ignored, but also classes with only one meeting that was TBD, and this solves both cases.
+			if not allTBDTimes:
+				courseInfo.Sections.append(sectionInfo)
 					
 		return courseInfo

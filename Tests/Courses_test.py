@@ -17,15 +17,15 @@ def time(s): # ex, s="15:30"
 	return datetime.strptime(s, "%H:%M")
 
 def test_ClassMeetingOverlapsSame():
-	args = ["M", time("9:30"), time("11:30"), "loc", "prof"]
+	args = ['M', time("9:30"), time("11:30"), "loc", "prof"]
 	assert ClassMeeting(*args).OverlapsWith(ClassMeeting(*args)) is True
 
 def test_ClassMeetingOverlaps():
 	args = []
-	assert (ClassMeeting("M", time("9:30"), time("11:30"), "loc", "prof").OverlapsWith(
-		ClassMeeting("M", time("10:30"), time("11:00"), "loc2", "prof2"))) is True
+	assert (ClassMeeting('M', time("9:30"), time("11:30"), "loc", "prof").OverlapsWith(
+		ClassMeeting('M', time("10:30"), time("11:00"), "loc2", "prof2"))) is True
 
-def test_ClassMeetingOverlapsDifDays():
+def test_ClassMeetingOverlapDifDays():
 	args = []
-	assert (ClassMeeting("M", time("9:30"), time("11:30"), "loc", "prof").OverlapsWith(
-		ClassMeeting("T", time("10:30"), time("11:00"), "loc2", "prof2"))) is False
+	assert (ClassMeeting('M', time("9:30"), time("11:30"), "loc", "prof").OverlapsWith(
+		ClassMeeting('T', time("11:30"), time("12:00"), "loc2", "prof2"))) is False

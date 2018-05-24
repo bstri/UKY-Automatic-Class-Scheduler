@@ -13,11 +13,16 @@ def CInput(prefix, number, sections=None, mandatory=None):
 courseInput = [
 	CInput('ma', 322, [1,2,3,4], True),
 	CInput('cs', 315),
-	CInput('ma', 415, [1], True),
+	CInput('ma', 415),
 	CInput('cs', 215, list(range(1,8))),
-	CInput('phy', 231)]
+	CInput('phy', 231),
+	CInput('ma', 213),
+	CInput('bio', 209),
+	CInput('che', 226),
+	CInput('eco', 201),
+	CInput('acc', 201)]
 
-configData = ConfigurationData("Fall", 2018, 14, 17)
+configData = ConfigurationData("Fall", 2018, 12, 18)
 for c in courseInput:
 	failure = configData.AddCourse(c)
 	if failure:
@@ -79,5 +84,10 @@ for cInfo in courseInfoList:
 		optionalCourses.append(cInfo)
 # ------------- END TESTING STUFF ---------------
 
+from time import perf_counter as tick
+now = tick()
 scheduleList = ScheduleList(optionalCourses, mandatoryCourses, configData.MinCredits, configData.MaxCredits)
-print(scheduleList)
+elapsed = tick() - now
+# print(scheduleList)
+print(str(len(scheduleList.Schedules)) + ' schedules found')
+print("completed in " + str(elapsed) + ' seconds')

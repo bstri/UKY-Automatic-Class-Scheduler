@@ -68,44 +68,70 @@ class SectionInfo:
 		self.Course = course
 		self.SectionNumber = sectionNum
 		self.NumCredits = numCredits
-		self.EarlyTime = None # time of earliest class meeting
-		self.LateTime = None # time of latest class let-out
 		self.Warnings = []
 		self.ClassMeetings = []
+		self.DayToStartTime = {} # each key is a day of the week M-F
+		self.DayToEndTime = {}
 		self.TimesTBD = False
 		self.LocationTBD = False
 		self.ProfessorTBD = False
+		self.sectionOverlapCache = {}
 		
-	def AddClassMeeting(self, meeting):
+	def __str__(self):
+		return '{}-{}'.format(str(self.Course), str(self.SectionNumber))
+		
+	def setSectionOverlap(self, otherSection, overlaps):
+		self.sectionOverlapCache[str(otherSection)] = overlaps
+		
+	def AddClassMeeting(self, meeting, day):
 		self.ClassMeetings.append(meeting)
-		if not self.EarlyTime or self.EarlyTime > meeting.StartTime:
-			self.EarlyTime = meeting.StartTime
-		if not self.LateTime or self.LateTime < meeting.EndTime:
-			self.LateTime = meeting.EndTime
+		if not self.DayToStartTime.get(day):
+			self.DayToStartTime[day] = meeting.StartTime
+			self.DayToEndTime[day] = meeting.EndTime
+		else: 
+			if self.DayToStartTime[day] > meeting.StartTime:
+				self.DayToStartTime[day] = meeting.StartTime
+			if self.DayToEndTime[day] < meeting.EndTime:
+				self.DayToEndTime[day] = meeting.EndTime
 		
 	def WarnTBDTimes(self):
+		if self.TimesTBD:
+			return
 		self.TimesTBD = True
 		self.Warnings.append("NOTE: This section has TBD meeting time(s).")
 		
 	def WarnTBDLocation(self):
+		if self.LocationTBD:
+			return
 		self.LocationTBD = True
 		self.Warnings.append("NOTE: This section has TBD location(s).")
 		
 	def WarnTBDProfessor(self):
+		if self.ProfessorTBD:
+			return
 		self.ProfessorTBD = True
 		self.Warnings.append("NOTE: This section has TBD professor(s).")
 		
 	def OverlapsWith(self, other):
-		for m1 in self.ClassMeetings:
-			for m2 in other.ClassMeetings:
-				if m1.OverlapsWith(m2):
-					return True
-		
+		overlaps = self.sectionOverlapCache.get(str(other))
+		if overlaps == None:
+			# This algorithm is actually faster than only comparing Mondays with Mondays, etc.
+			for m in self.ClassMeetings: 
+				for m2 in other.ClassMeetings:
+					if m.OverlapsWith(m2):
+						self.setSectionOverlap(other, True)
+						other.setSectionOverlap(self, True)
+						return True
+			self.setSectionOverlap(other, False)
+			other.setSectionOverlap(self, False)
+		else:
+			return overlaps
+
 class ClassMeeting:
 	'''Contains the information related to a single weekly class meeting'''
 	
-	def __init__(self, dayOfWeek, startTime, endTime, location, professor):
-		self.Day = dayOfWeek
+	def __init__(self, day, startTime, endTime, location, professor):
+		self.Day = day
 		self.StartTime = startTime # startTime and endTime are datetime.datetime (is to always refer to January 1st, 1900, as is provided by default by datetime.strptime)
 		self.EndTime = endTime
 		self.Duration = endTime - startTime
@@ -113,4 +139,4 @@ class ClassMeeting:
 		self.Professor = professor
 		
 	def OverlapsWith(self, other):
-		return other.Day == self.Day and (self.StartTime <= other.StartTime < self.StartTime + self.Duration or other.StartTime <= self.StartTime < other.StartTime + other.Duration)
+		return self.Day == other.Day and (self.StartTime <= other.StartTime < self.StartTime + self.Duration or other.StartTime <= self.StartTime < other.StartTime + other.Duration)

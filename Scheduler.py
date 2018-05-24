@@ -1,4 +1,4 @@
-import copy
+from copy import copy, deepcopy
 from itertools import chain, combinations
 
 class Schedule:
@@ -10,17 +10,27 @@ class Schedule:
 		self.AverageStartTime = None
 		self.AverageEndTime = None
 		
-	def TryAddSection(self, section):
+	def SectionFits(self, section):
 		for s in self.Sections:
 			if s.OverlapsWith(section):
 				return False
+		return True	
+	
+	def AddSection(self, section):
 		self.Sections.append(section)
 		self.NumCredits += section.NumCredits
 		# todo: update average start and end times
-		return True	
 		
 	def __str__(self):
 		return '; '.join(['{}-{}'.format(str(s.Course), str(s.SectionNumber)) for s in self.Sections]) 
+	
+	def __deepcopy__(self, memo):
+		cls = self.__class__
+		result = cls.__new__(cls)
+		# memo[id(self)] = result # Don't care about the memo because there is no recursive structure
+		for k, v in self.__dict__.items():
+			setattr(result, k, copy(v)) # self.Sections doesn't need a deep copy
+		return result
 
 def makeScheduleTree(rootSchedule, courseInfoList):
 	if len(courseInfoList) == 0:
@@ -33,8 +43,9 @@ def _scheduleTreeHelper(rootSchedule, courseInfoList, schedules):
 		schedules.append(rootSchedule)
 		return
 	for s in courseInfoList[0].Sections:
-		cpy = copy.deepcopy(rootSchedule)
-		if cpy.TryAddSection(s):
+		if rootSchedule.SectionFits(s):
+			cpy = deepcopy(rootSchedule)
+			cpy.AddSection(s)
 			_scheduleTreeHelper(cpy, courseInfoList[1:], schedules)
 
 class ScheduleList:
