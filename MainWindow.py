@@ -4,6 +4,7 @@ from tkinter import N, E, S, W
 ALL = N+E+S+W
 from Async import AddAsync
 from Entry import EntryLetters, EntryNumbers, EntryRange
+# from WebsiteInterface import WebsiteInterface
 
 _basePrint = print
 def print(*args):
@@ -42,9 +43,11 @@ class MainWindow(tk.Tk):
 		self.title("UKY Class Scheduler")
 		self.geometry("600x400")
 		center(self)
-		configureRows(self, [1, 3, 1])
-		configureColumns(self, [1, 3, 1])
-		self.CourseInputFrame = grid(CourseInputFrame(self), row=1, column=1, sticky=ALL)
+		self.rowconfigure(0, weight=1, pad=2)
+		self.columnconfigure(0, weight=1, pad=2)
+		# configureRows(self, [1, 98, 1])
+		# configureColumns(self, [1, 98, 1])
+		self.CourseInputFrame = grid(CourseInputFrame(self), row=0, column=0, sticky=ALL)
 
 class MultiMessageStringVar():
 	'''Enable multiple independent messages to be contained within a single StringVar (named .Var).
@@ -79,6 +82,12 @@ class MultiMessageStringVar():
 		self.lines = {}
 		self.update()
 
+def standardConfigure(obj, width, height):
+	for w in range(width):
+		obj.rowconfigure(w, weight=1)
+	for h in range(height):
+		obj.columnconfigure(w, weight=1)
+
 class CourseInputFrame(tk.Frame):
 	# The following are line numbers for the MultiMessageStringVar class
 	INPUT_ERROR_PREFIX = 1
@@ -90,6 +99,14 @@ class CourseInputFrame(tk.Frame):
 	def __init__(self, master=None):
 		super().__init__(master, borderwidth=2, relief="groove")
 		AddAsync(self)
+		holder = grid(tk.Frame(self, highlightthickness=1, highlightbackground="red", highlightcolor="red"), sticky=E+W)
+		standardConfigure(holder, 2, 2)
+		grid(tk.Label(holder, text="Select Term"), sticky=W+E)
+		self.Term = tk.StringVar()
+		self.Term.set("Fall") # TODO use: WebsiteInterface.GetDefaultSemester())
+		grid(tk.OptionMenu(holder, self.Term, "Fall", "Winter", "Spring"), row=0, column=1)
+		self.Year = grid(EntryNumbers(holder), row=0, column=2)
+		self.Year.bind("<Return>", lambda obj: self.master.focus())
 		grid(tk.Label(self, text="Course Input"), sticky=W)
 		holder = grid(tk.Frame(self)) #, highlightthickness=1, highlightbackground="red", highlightcolor="red"), sticky=E+W)
 		#configureColumns(holder, [3, 1, 3, 1, 3]) # Note: This line doesn't do anything; instead, dummy labels are added below to force spacing

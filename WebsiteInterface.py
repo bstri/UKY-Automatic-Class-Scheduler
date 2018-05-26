@@ -29,7 +29,7 @@ class WebsiteInterface:
 			"CourseNumber": str(course.Number),
 			"CourseSection": "",
 			"Year": str(year + (semester == "Fall" and 1 or 0)),
-			"Period": semester == "Fall" and "010" or "030",
+			"Period": semester == "Fall" and "010" or semester == "Winter" and "020" or "030",
 			"SearchTerms": "",
 			"UkCore": "",
 			"Is300LevelPlus": "false",
