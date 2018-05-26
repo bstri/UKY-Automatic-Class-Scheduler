@@ -36,7 +36,12 @@ until finished
 
 ## How to Use
 
+### What it can't do
 
+The Automatic Scheduler can't handle a few noteable cases:
+* Variable credit classes (unless a section has a set credit number)
+* Classes that allow you to register for multiple sections during the same semester
+If you find another case you think it doesn't handle correctly, please let me know.
 
 ## Running the tests
 

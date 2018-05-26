@@ -47,13 +47,12 @@ class WebsiteInterface:
 		
 		credits = container.xpath('div/div/div/div/h5/span[2]/span/text()')[0] # Two forms: '3.0 Credits' ; '1.0 - 2.0 (variable) Credits'
 		numC = int(credits[0])
+		variableCredits = False
 		if '-' in credits:
-			return "Variable credit hour classes not supported."
-		
-		# prep courseInfo (which will be returned)
-		courseInfo = CourseInfo(course, numC)
+			variableCredits = True # may be able to find section specific credit info
 		
 		sections = container.xpath('div/div[starts-with(@class,"table-thin-row small filterable")]')
+		sectionInfos = []
 		for section in sections:
 			# skip this section if it has been cancelled
 			classVal = section.xpath("div[1]/@class")[0]
@@ -62,8 +61,17 @@ class WebsiteInterface:
 			
 			# different meetings might be lecture, lab, recitation, etc.
 			meetings = section.xpath('div[starts-with(@class,"clearfix course-row expanded-section table-thin-row-event")]')
-			
 			sectionNumber = int(meetings[0].xpath("(.//a)[1]/text()")[0])
+			
+			if variableCredits: # try to find section's num credits
+				strongTags = section.xpath('div[starts-with(@class,"clearfix course-row expanded-section table-thin-row-event")]/p/strong/text()')
+				for string in strongTags:
+					if 'Credits' in string:
+						if '-' in string: # variable length credits; ignore section
+							continue 
+						numC = int(string[0])
+						break
+						
 			sectionInfo = SectionInfo(sectionNumber, course, numC)
 			
 			# warnings might be location warnings or controlled enrollment warnings
@@ -72,12 +80,14 @@ class WebsiteInterface:
 			
 			allTBDTimes = True
 			for meeting in meetings:
+				meetingType = meeting.xpath('div[@class="pull-left"][@style="width: 80px;"]/text()')[0] # lab, lecture, etc.
+				
 				location = meeting.xpath('div[@class="pull-left"][@style="width: 170px;"]/div/descendant::text()')
 				strLocation = ' '.join(location) # often will have building followed by room number
 				if location[0] == "TBD":
 					sectionInfo.WarnTBDLocation()
 				
-				professor = meeting.xpath('div[@class="pull-left"][@style="width: 130px;"]/div/text()')[0]
+				professor = meeting.xpath('div[@class="pull-left"][@style="width: 130px;"]//text()')[0]
 				if professor == "TBD":
 					sectionInfo.WarnTBDProfessor()
 				
@@ -92,12 +102,23 @@ class WebsiteInterface:
 				endTime = timeframe[timeframe.find('-') + 2:]
 				startDateTime = datetime.datetime.strptime(startTime, "%I:%M %p")
 				endDateTime = datetime.datetime.strptime(endTime, "%I:%M %p")
-				for day in days:
-					classMeeting = ClassMeeting(day, startDateTime, endDateTime, strLocation, professor)
-					sectionInfo.AddClassMeeting(classMeeting, day)
+				
+				classMeeting = ClassMeeting(meetingType, days, startDateTime, endDateTime, strLocation, professor)
+				sectionInfo.AddClassMeeting(classMeeting)
 			
 			# This is kind of arbitrary. I've seen some classes where a meeting with TBD time was meant to be ignored, but also classes with only one meeting that was TBD, and this solves both cases.
 			if not allTBDTimes:
-				courseInfo.Sections.append(sectionInfo)
-					
-		return courseInfo
+				sectionInfos.append(sectionInfo)
+		
+		if len(sectionInfos) == 0:
+			return "No valid sections found."
+		if variableCredits:
+			# Check if all the sections happen to have the same number of credits
+			stdCredits = sectionInfos[0].NumCredits
+			for s in sectionInfos[1:]:
+				if s.NumCredits != stdCredits:
+					break
+			else: 
+				numC = stdCredits
+				variableCredits = False
+		return CourseInfo(course, numC, sectionInfos, variableCredits)

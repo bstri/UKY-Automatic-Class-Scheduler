@@ -25,19 +25,6 @@ class CourseInput:
 		self.Course = course
 		self.Mandatory = mandatory
 		self.SectionNumbers = sectionNumbers and set(sectionNumbers) or set()
-	
-	@staticmethod
-	def Parse(string):
-		'''Turns a string of space delimited info into a CourseInput'''
-		string = string.rstrip()
-		argList = []
-		index = string.find(' ')
-		while index != -1:
-			argList.append(string[:index])
-			string = string[index + 1:]
-			index = string.find(' ')
-		argList.append(string)
-		return CourseInput(Course(argList[0], int(argList[1])), *argList[2:])
 
 	def __repr__(self):
 		return "CourseInput({!r}, {!r}, mandatory={!r})".format(self.Course, self.SectionNumbers, self.Mandatory)
@@ -48,15 +35,11 @@ class CourseInput:
 class CourseInfo:
 	'''Info about a course'''
 	
-	def __init__(self, course, numCredits):
+	def __init__(self, course, numCredits, sections, variableCredit=False):
 		self.Course = course
 		self.NumCredits = numCredits
-		self.Sections = []
-		
-	def AddSection(self, sectionNum):
-		s = SectionInfo(sectionNum, self.Course, self.NumCredits)
-		self.Sections.append(s)
-		return s
+		self.IsVariableCredit = variableCredit # numCredits represents the minimum when this is True
+		self.Sections = sections
 		
 	def __str__(self):
 		return "{}-{}".format(self.Course, ",".join(map(str, sorted(s.SectionNumber for s in self.Sections))))
@@ -70,8 +53,8 @@ class SectionInfo:
 		self.NumCredits = numCredits
 		self.Warnings = []
 		self.ClassMeetings = []
-		self.DayToStartTime = {} # each key is a day of the week M-F
-		self.DayToEndTime = {}
+		# self.DayToStartTime = {} # each key is a day of the week M-F
+		# self.DayToEndTime = {}
 		self.TimesTBD = False
 		self.LocationTBD = False
 		self.ProfessorTBD = False
@@ -83,16 +66,16 @@ class SectionInfo:
 	def setSectionOverlap(self, otherSection, overlaps):
 		self.sectionOverlapCache[str(otherSection)] = overlaps
 		
-	def AddClassMeeting(self, meeting, day):
+	def AddClassMeeting(self, meeting):
 		self.ClassMeetings.append(meeting)
-		if not self.DayToStartTime.get(day):
-			self.DayToStartTime[day] = meeting.StartTime
-			self.DayToEndTime[day] = meeting.EndTime
-		else: 
-			if self.DayToStartTime[day] > meeting.StartTime:
-				self.DayToStartTime[day] = meeting.StartTime
-			if self.DayToEndTime[day] < meeting.EndTime:
-				self.DayToEndTime[day] = meeting.EndTime
+		# if not self.DayToStartTime.get(day):
+		# 	self.DayToStartTime[day] = meeting.StartTime
+		# 	self.DayToEndTime[day] = meeting.EndTime
+		# else: 
+		# 	if self.DayToStartTime[day] > meeting.StartTime:
+		# 		self.DayToStartTime[day] = meeting.StartTime
+		# 	if self.DayToEndTime[day] < meeting.EndTime:
+		# 		self.DayToEndTime[day] = meeting.EndTime
 		
 	def WarnTBDTimes(self):
 		if self.TimesTBD:
@@ -115,7 +98,6 @@ class SectionInfo:
 	def OverlapsWith(self, other):
 		overlaps = self.sectionOverlapCache.get(str(other))
 		if overlaps == None:
-			# This algorithm is actually faster than only comparing Mondays with Mondays, etc.
 			for m in self.ClassMeetings: 
 				for m2 in other.ClassMeetings:
 					if m.OverlapsWith(m2):
@@ -130,8 +112,9 @@ class SectionInfo:
 class ClassMeeting:
 	'''Contains the information related to a single weekly class meeting'''
 	
-	def __init__(self, day, startTime, endTime, location, professor):
-		self.Day = day
+	def __init__(self, meetingType, days, startTime, endTime, location, professor):
+		self.Type = meetingType # e.g. lab, lecture, recitation
+		self.Days = days # e.g. 'MWF'
 		self.StartTime = startTime # startTime and endTime are datetime.datetime (is to always refer to January 1st, 1900, as is provided by default by datetime.strptime)
 		self.EndTime = endTime
 		self.Duration = endTime - startTime
@@ -139,4 +122,4 @@ class ClassMeeting:
 		self.Professor = professor
 		
 	def OverlapsWith(self, other):
-		return self.Day == other.Day and (self.StartTime <= other.StartTime < self.StartTime + self.Duration or other.StartTime <= self.StartTime < other.StartTime + other.Duration)
+		return any(day for day in self.Days if day in other.Days) and (self.StartTime <= other.StartTime < self.StartTime + self.Duration or other.StartTime <= self.StartTime < other.StartTime + other.Duration)

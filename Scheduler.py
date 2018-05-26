@@ -1,5 +1,6 @@
 from copy import copy, deepcopy
-from itertools import chain, combinations
+from itertools import chain, combinations, product
+from Courses import CourseInfo
 
 class Schedule:
 	'''Info about a class schedule'''
@@ -48,73 +49,79 @@ def _scheduleTreeHelper(rootSchedule, courseInfoList, schedules):
 			cpy.AddSection(s)
 			_scheduleTreeHelper(cpy, courseInfoList[1:], schedules)
 
-class ScheduleList:
-	'''Contains and generates a list of schedules'''
+class ScheduleList(list):
+	'''A list of generated schedules'''
 	
-	def __init__(self, optionalCourses, mandatoryCourses, minCredits, maxCredits):
-		self.Schedules = []
-
-		numMandatoryCredits = 0
-		# get all schedules that (only) contain each mandatory course
-		rootSchedules = makeScheduleTree(Schedule(), mandatoryCourses)
-		if len(rootSchedules) > 0: 
-			numMandatoryCredits = rootSchedules[0].NumCredits
-		elif len(mandatoryCourses) > 0:
-			return "No schedules found containing the specified mandatory courses."
-
-		# check if the mandatory schedules (if there are any) can be standalone schedules
-		if numMandatoryCredits >= minCredits:
-			if numMandatoryCredits > maxCredits:
-				return "Specified mandatory courses exceed given credit maximum"
-			else:
-				self.Schedules = rootSchedules
-
-		if len(optionalCourses) == 0:
-			return
-		
-		minCredits -= numMandatoryCredits
-		maxCredits -= numMandatoryCredits
-			
-		# NOTE: This next part is an optimization and is not necessary. It leads to fewer calls of combinations() below
-		# sort remaining (non-mandatory) courses by descending num credits
-		optionalCourses.sort(key=lambda c: c.NumCredits, reverse=True)
-		# the credit sum of the first m of these sorted courses gets a lower bound on the number of courses we need to add to each schedule in schedules
-		# m will be at least 1, which prevents any schedule overlap with mandatory-only schedules
-		creditSum = 0
-		for i,c in enumerate(optionalCourses):
-			creditSum += c.NumCredits
-			if creditSum >= minCredits:
-				lowerCombinationBound = i + 1
-				break
-		if not lowerCombinationBound:
-			return
-		# the last n of these sorted courses gets an upper bound
-		creditSum = 0
-		upperCombinationBound = len(optionalCourses)
-		for i,c in enumerate(reversed(optionalCourses)):
-			creditSum += c.NumCredits
-			if creditSum > maxCredits:
-				upperCombinationBound = i
-				break
-		if upperCombinationBound < lowerCombinationBound:
-			# e.g. 5-6 credits; [4,4,3]. Lower is 2 and upper is 1. No schedules are possible
-			return
-				
-		# form an iterable that contains all m- through n-combinations of the courses in optionalCourses
-		combos = chain.from_iterable(combinations(optionalCourses, r) for r in range(lowerCombinationBound, upperCombinationBound + 1)) 
-
-		# for each combination, make sure num credits is valid, and only add schedules that use all the courses in the combination, to prevent overlap
-		for i in range(len(rootSchedules)):
+	def __init__(self, minCredits, maxCredits, mandatoryBlocks=[], optionalBlocks=[]):
+		# get all schedules that satisfy the mandatory blocks
+		numCreditsToRootSchedules = {0:[Schedule()]}
+		for block in mandatoryBlocks:
+			combos = combinations(block, block.Count)
+			numCreditsToLeafSchedules = {}
 			for c in combos:
-				creditSum = 0
-				for course in c:
-					creditSum += course.NumCredits
-				if not (minCredits <= creditSum <= maxCredits):
+				comboCreditSize = sum(course.NumCredits for course in c)
+				for k,v in numCreditsToRootSchedules.items():
+					newNumCredits = k + comboCreditSize
+					if not numCreditsToLeafSchedules.get(newNumCredits):
+						numCreditsToLeafSchedules[newNumCredits] = []
+					for s in v:
+						numCreditsToLeafSchedules[newNumCredits].extend(makeScheduleTree(s,c))
+			if len(numCreditsToLeafSchedules) == 0:
+				return "No schedules found containing the specified mandatory courses."
+			numCreditsToRootSchedules = numCreditsToLeafSchedules
+			
+		iterables = []
+		for block in optionalBlocks:
+			iterables.append(list(block.Count and combinations(block, block.Count) or chain.from_iterable(combinations(block, r) for r in range(len(block) + 1))))
+		# Tried limiting which all combinations were tested, but it produced only a small speed increase
+		allCombinations = product(*iterables) 
+		
+		for credits,rootSchedules in numCreditsToRootSchedules.items():
+			# check if the mandatory schedules (if there are any) can be standalone schedules
+			if credits >= minCredits:
+				if credits > maxCredits:
 					continue
-				self.Schedules += makeScheduleTree(rootSchedules[i], list(c))
+				else:
+					self.extend(rootSchedules)
+
+			if not optionalBlocks:
+				continue
+		
+			branchMinCredits = minCredits - credits
+			branchMaxCredits = maxCredits - credits
+			
+			# for each combination, make sure num credits is valid, and only add schedules that use all the courses in the combination, to prevent overlap
+			for i in range(len(rootSchedules)):
+				for c in allCombinations:
+					c = list(chain.from_iterable(c)) # flatten this tuple of tuples so you just have the courses
+					if not (branchMinCredits <= sum(course.NumCredits for course in c) <= branchMaxCredits):
+						continue
+					self.extend(makeScheduleTree(rootSchedules[i], c))
 			
 	def __str__(self):
-		return '\n'.join(map(str, self.Schedules))
+		return '\n'.join(map(str, self))
 		
 	def SortByNumCredits(self, descending=False):
-		self.Schedules.sort(key=lambda s: s.NumCredits, reverse=descending)
+		self.sort(key=lambda s: s.NumCredits, reverse=descending)
+		
+class CourseBlock(list):
+	'''A list of CourseInfo with scheduling data'''
+	
+	def __init__(self, courses, mandatory, count=None):
+		self.extend(courses)
+		self.Mandatory = mandatory
+		self.Count = count # None means 'any'; if mandatory is true this is not allowed
+		if not count:
+			self.MinCredits = 0
+			self.MaxCredits = sum(c.NumCredits for c in courses)
+		else:
+			self.sort(key = lambda c: c.NumCredits, reverse=True)
+			self.MaxCredits = sum(c.NumCredits for c in self[:count])
+			self.MinCredits = sum(c.NumCredits for c in self[-count:])
+			
+class VariableCreditCourseBlock(CourseBlock):
+	'''A course block except a list of sections related to one course'''
+	
+	def __init__(self, sections, mandatory, count):
+		courses = [CourseInfo(s.Course, [s], s.NumCredits) for s in sections]
+		super().__init__(courses, mandatory, count)
