@@ -1,5 +1,5 @@
 from WebsiteInterface import WebsiteInterface
-from Scheduler import ScheduleList
+from Scheduler import ScheduleList, CourseBlock
 import pickle
 from datetime import datetime, timedelta
 
@@ -11,15 +11,15 @@ def CInput(prefix, number, sections=None, mandatory=None):
 	return CourseInput(Course(prefix, number), sections, mandatory)
 	
 courseInput = [
-	CInput('ma', 322, [1,2,3,4], True),
-	CInput('cs', 315),
-	CInput('ma', 415),
+	CInput('ma', 322, [1,2,3,4]),
+	CInput('cs', 485), # variable credit
+	CInput('arc', 101), # multiple instructors
 	CInput('cs', 215, list(range(1,8))),
 	CInput('phy', 231),
 	CInput('ma', 213),
 	CInput('bio', 209),
 	CInput('che', 226),
-	CInput('eco', 201),
+	CInput('eco', 201), # TBD class times
 	CInput('acc', 201)]
 
 configData = ConfigurationData("Fall", 2018, 12, 18)
@@ -86,8 +86,9 @@ for cInfo in courseInfoList:
 
 from time import perf_counter as tick
 now = tick()
-scheduleList = ScheduleList(optionalCourses, mandatoryCourses, configData.MinCredits, configData.MaxCredits)
+scheduleList = ScheduleList(configData.MinCredits, configData.MaxCredits,  
+	optionalBlocks = [CourseBlock(optionalCourses, False)])
 elapsed = tick() - now
 # print(scheduleList)
-print(str(len(scheduleList.Schedules)) + ' schedules found')
+print(str(len(scheduleList)) + ' schedules found')
 print("completed in " + str(elapsed) + ' seconds')

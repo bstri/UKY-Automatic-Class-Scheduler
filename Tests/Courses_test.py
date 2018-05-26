@@ -9,9 +9,6 @@ def equal(ci, course, sections=None, mandatory=False):
 	assert len(ci.SectionNumbers) == (sections and len(sections) or 0)
 	assert ci.Mandatory == mandatory
 
-def test_ParseSimple():
-	assert equal(CourseInput.Parse("MA 310"), Course("MA", 310)) is None
-
 
 def time(s): # ex, s="15:30"
 	return datetime.strptime(s, "%H:%M")

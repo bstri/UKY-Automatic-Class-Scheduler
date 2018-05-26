@@ -24,25 +24,22 @@ Configuration Input:
 	☐	Allow saving/loading configurations
 	> See "Nice Additional Features" for more possible options
 
-Retrieving Course Information:
-	☐	Get available class schedules for the input courses
+✔ Retrieving Course Information: @done (18-05-24 17:22)
+	✔	Get available class schedules for the input courses @done (18-05-24 17:22)
 		✔	Determine where to get this information @done (18-05-16 00:06)
-		☐	Deal with caching
+		✔	Deal with caching @done (18-05-24 17:22)
 
 Calculating Desirable Schedules:
 	Once the course information has been retrieved...
-	☐	Run schedule generation algorithm
+	✔	Run schedule generation algorithm @done (18-05-24 17:23)
 	☐	Display output
 	☐	Allow saving results to a file
-
-Possible schedule generation algorithms:
-	1. Brute force: For every combination of classes (though only 1 class per course, naturally; one iteration for each course should also be "no class" if it isn't mandatory; first global iteration should be just the mandatory courses, to ensure that they aren't contradictory), keep that combination only if there isn't any class overlap and if all the user's configuration inputs are satisfied. (Depending on how the configuration is designed, giving it a score may be more appropriate than removing the combination entirely, if the classes don't overlap.)
 	
 Sorting Schedules:
 	By...
 	☐	Start time (when first class starts): add up the start times for each day of the week then average
 	☐	End time (when last class lets out): same
-	☐	Number of credits
+	✔	Number of credits @done (18-05-24 17:22)
 	☐	Allow at least primary and secondary sort (both visible to the user)
 	>	See "Nice Additional Features" for more possibilities
 
@@ -51,10 +48,6 @@ Nice Additional Features:
 	in order of priority/urgency
 --- ✄ -----------------------
 
-Prevent TBD Classes:
-	Allows exclusion of classes that have TBD professor, location, or meeting times
-	> Would appear as 3 checkboxes 'Allow TBD ___' all checked by default
-		
 Section Chooser:
 	Allows removal of specific sections from the scheduler
 	☐	Have a Show Sections button next to each course as it is added. Clicking this button will expand the course vertically into its sections:
@@ -66,19 +59,17 @@ Section Chooser:
 	☐	Warnings is a control that appears when the section has warnings, like location or controlled enrollment, and clicking it or hovering over it will show the information
 	☐	(Advanced) Allow professor blacklist
 	
-Select/Deselect Schedules:
-	Allow user to give themselves visual clues as to which schedules they like and dislike
-	> Could grey out and move to the bottom of the list if they "deselect" a schedule that they don't like
-	> Could highlight and move to the top/dedicated place on the side if they like a particular schedule
+Favorite Schedules:
+	Allow user to prefer certain schedules, which become distinguished from the others
+	> Could move schedule to a dedicated place on the side
 	
 Time Exclusion:
 	Prioritizes schedules that leave open a particular time range on particular day(s) of the week
 	> E.g. no 8 am's, no evening classes, etc.
 	
-Course Blocks: 
-	Can separate courses into blocks and do actions on each block (like specifying minimum credits)
-	> E.g. Useful if you must take 2 courses from 3 options, and then the rest are electives
-	> "Couple" courses that must either both be taken, or neither
+Prevent TBD Classes:
+	Allows exclusion of classes that have TBD professor, location, or meeting times
+	> Would appear as 3 checkboxes 'Allow TBD ___' all checked by default
 
 Buddy System:
 	Add a friend's schedule information to see which classes you could take together
@@ -86,13 +77,18 @@ Buddy System:
 	☐	Allow importing these results
 	☐	Look for shared classes amongst the possibilities
 
-Automatically Exclude Classes with Closed Seats:
-	Requires user to log in
-	☐	Automatically check seat status and either exclude such classes or prioritize schedules that have open seats for all included classes
-
 Meal Break:
 	Prioritizes schedules that accommodate lunch breaks.
 	☐	Allow user to specify lunch break minimum start/end times and minimum duration
+
+Course Blocks: 
+	Can separate courses into blocks and do actions on each block (like specifying minimum credits)
+	> E.g. Useful if you must take 2 courses from 3 options, and then the rest are electives
+	> "Couple" courses that must either both be taken, or neither
+
+Automatically Exclude Classes with Closed Seats:
+	Requires user to log in
+	☐	Automatically check seat status and either exclude such classes or prioritize schedules that have open seats for all included classes
 
 Maximum Consecutive Class Time:
 	Avoids schedules that have more than a specified number of hours of classes in a row
@@ -112,4 +108,4 @@ Professor Ratings:
 Specific Files/Systems Todos:
 --- ✄ -----------------------
 CourseInput:
-	☐	Delete CourseInput.Parse when no longer needed (and the tests for it)
+	✔	Delete CourseInput.Parse when no longer needed (and the tests for it) @done (18-05-24 17:31)
