@@ -3,6 +3,54 @@ Summary:
 	☐	Obtain up-to-date classes for specified semester and desired courses
 	☐	Calculating desirable schedules based on classes and configuration
 	☐	Saving results and/or graphical output
+	
+Control Flow:
+	Main handles the flow of the entire program, and so it should start by making the course input gui
+	Course Input Gui module:
+		☐	Term (Fall/Spring + year) dropdown/input controls at top
+		☐	Column headings: course prefix, course #, section # (optional)
+		Course input format
+			☐	A textbox under each column, then an Enter button in the 4th column
+				☐	Autocomplete course prefix 
+					☐	Locate data on all the course prefixes, scrape it, and cache it
+				☐	Tab cycling between textboxes
+				☐	'Enter' key submits
+			☐	On submission, loading icon appears to the left
+				Website Interface:
+					✔	Fetches info about a given class from the course catalog @done (18-05-27 21:13)
+					✔	Contains cache of fetched course info @done (18-05-27 21:13)
+			☐	When data has arrived, turn the textboxes into labels, add an expandable arrow button, and an X button to remove the course
+			☐	On expansion, show all the sections, column headers: Meeting Type, Profesor, Days, Time
+				☐	A checkbox, selecting/deselecting the section for schedule consideration
+				☐	Full course name e.g. MA322-1
+				☐	Rows for each meeting type (lab, lecture, etc.)
+					☐	Warnings button in the last column
+		Mandatory Course Block
+			☐	Visual block of courses the user can add to
+			☐	Somewhere, the text "Use all course(s) from this list"
+		☐ Optional Course Block -- "Use any course(s) from this list"
+		☐	Add Custom Block button
+			☐	User specifies count "Use __ course(s) from this list" dropdown that starts blank and goes from 1-#courses in custom block
+			☐	Mandatory checkbox
+		☐	"Find schedules with __ - __ credits"
+		☐	Return list of course blocks and credit range to Main
+	Scheduler:
+		Input: List of course blocks and credit range
+		☐	Support courses with sections that have differing credit amounts
+			> Treat each section as a different course since multiple registration seems likely for this kind of class
+		✔	Generate schedules @done (18-05-27 23:17)
+	Schedule Viewer Gui:
+		Input: List of schedules
+		☐	Ignore schedules starting at (checkboxes): 8am, 9am, 9:30, 10, 11, ...
+		☐	Ignore schedules ending at 8pm, 7pm, 6pm, ...
+			> Ideally would show just the times that appear in the schedules, but sometimes there can be quite a few schedules
+		☐	Showing schedules with (checkboxes for each credit number in the credit range)
+		☐	"Showing 100 of [# schedules found] schedules found"
+			> Don't sort the schedules, because they come in the order that the user input the classes
+		☐	Column headers: #Credits, Start Time, End Time
+		☐	Mousing over a schedule will create a schedule visualization on the right; clicking expands the visualization
+			☐	Shows 8am - 8pm as row headers, M-F as column headers
+			☐	Shows each class meeting, the size of each determined by the time span of the meeting; content is the full class name and the meeting type
 
 Questions:
 	☐	Should the different features (ex "Meal Break") be priorities (that can be stretched or broken) or limits (that may prevent schedules from being found at all)? If priorities, how should they be stretched/broken?
@@ -24,52 +72,19 @@ Configuration Input:
 	☐	Allow saving/loading configurations
 	> See "Nice Additional Features" for more possible options
 
-✔ Retrieving Course Information: @done (18-05-24 17:22)
-	✔	Get available class schedules for the input courses @done (18-05-24 17:22)
-		✔	Determine where to get this information @done (18-05-16 00:06)
-		✔	Deal with caching @done (18-05-24 17:22)
-
-Calculating Desirable Schedules:
-	Once the course information has been retrieved...
-	✔	Run schedule generation algorithm @done (18-05-24 17:23)
-	☐	Display output
-	☐	Allow saving results to a file
-	
-Sorting Schedules:
-	By...
-	☐	Start time (when first class starts): add up the start times for each day of the week then average
-	☐	End time (when last class lets out): same
-	✔	Number of credits @done (18-05-24 17:22)
-	☐	Allow at least primary and secondary sort (both visible to the user)
-	>	See "Nice Additional Features" for more possibilities
-
 --- ✄ -----------------------
 Nice Additional Features:
 	in order of priority/urgency
 --- ✄ -----------------------
-
-Section Chooser:
-	Allows removal of specific sections from the scheduler
-	☐	Have a Show Sections button next to each course as it is added. Clicking this button will expand the course vertically into its sections:
-			Course 1 Sec 1: [professor(s)]	[class meet days]		[start time]	[end time]		[warnings]
-						Sec 2: [prof2]
-						
-			Course 2 Sec 1: etc
-	☐	Can select or deselect each section (all are checked to start with, unless a specific section was entered)
-	☐	Warnings is a control that appears when the section has warnings, like location or controlled enrollment, and clicking it or hovering over it will show the information
-	☐	(Advanced) Allow professor blacklist
 	
-Favorite Schedules:
-	Allow user to prefer certain schedules, which become distinguished from the others
-	> Could move schedule to a dedicated place on the side
-	
-Time Exclusion:
-	Prioritizes schedules that leave open a particular time range on particular day(s) of the week
-	> E.g. no 8 am's, no evening classes, etc.
 	
 Prevent TBD Classes:
 	Allows exclusion of classes that have TBD professor, location, or meeting times
 	> Would appear as 3 checkboxes 'Allow TBD ___' all checked by default
+
+Meal Break:
+	Prioritizes schedules that accommodate lunch breaks.
+	☐	Allow user to specify lunch break minimum start/end times and minimum duration
 
 Buddy System:
 	Add a friend's schedule information to see which classes you could take together
@@ -77,14 +92,9 @@ Buddy System:
 	☐	Allow importing these results
 	☐	Look for shared classes amongst the possibilities
 
-Meal Break:
-	Prioritizes schedules that accommodate lunch breaks.
-	☐	Allow user to specify lunch break minimum start/end times and minimum duration
-
-Course Blocks: 
-	Can separate courses into blocks and do actions on each block (like specifying minimum credits)
-	> E.g. Useful if you must take 2 courses from 3 options, and then the rest are electives
-	> "Couple" courses that must either both be taken, or neither
+Favorite Schedules:
+	Allow user to star certain schedules, which become distinguished from the others
+	> Could move schedule to a dedicated place on the side; allow saving favorite schedules
 
 Automatically Exclude Classes with Closed Seats:
 	Requires user to log in
