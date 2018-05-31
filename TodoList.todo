@@ -1,7 +1,8 @@
 Control Flow:
 	Main handles the flow of the entire program, and so it should start by making the course input gui
 	Course Input Gui module:
-		☐	Term (Fall/Spring + year) dropdown/input controls at top
+		✔	Term (Fall/Spring + year) dropdown/input controls at top @done (18-05-31 08:56)
+			☐	If year changes, ask user for confirmation if course(s) in course display
 		☐	Column headings: course prefix, course #, section # (optional)
 		Course input format
 			☐	A textbox under each column, then an Enter button in the 4th column
