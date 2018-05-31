@@ -121,7 +121,7 @@ class Row:
 		Note that if you send in padx/pady, those will be directed to the 'grid' command.'''
 		self.column = self.column + 1
 		grid = {}
-		for x in {"padx", "pady"}:
+		for x in {"padx", "pady", "sticky"}:
 			if x in kwargs:
 				grid[x] = kwargs.pop(x)
 		obj.grid(row=0, column=self.column, **grid)
@@ -170,27 +170,34 @@ class CourseInputFrame(tk.Frame):
 		self.Year.set("2018") # TODO use: WebsiteInterface.GetDefaultYear())
 		addp(ttk.OptionMenu(holder, self.Year, None, 2018, 2019, 2020)) # todo use next line (GetValidYears maybe just is curYear -> curYear+3)
 		#addp(ttk.OptionMenu(holder, self.Year, None, *WebsiteInterface.GetValidYears()))
-		
+
+		from tkinter import font
+		a = grid(tk.Label(holder, text="Course Input"))
+		f = font.Font(a, a.cget("font"))
+		f.configure(underline=True)
+		a.configure(font=f)
+		# print(repr(f.actual()))
+
 		newRow()
 		holder = grid(tk.Frame(self))
-		add(tk.Label(holder, text="Course Input:"))
 		def bind(obj):
 			obj.bind("<Return>", self.enterPressed)
 			return obj
+		self.Mandatory = tk.StringVar()
+		self.Mandatory.set("Mandatory")
+		x = add(ttk.OptionMenu(holder, self.Mandatory, None, "Mandatory", "Optional", "Custom"), sticky=W)
+		x.config(width=10)
+
 		self.coursePrefix = bind(addp(EntryLetters(holder, width=8, placeholderText="Prefix")))
 		self.courseNumber = bind(addp(EntryNumbers(holder, width=8, placeholderText="Number")))
 		self.sectionNumbers = bind(addp(EntryRange(holder, width=8, placeholderText="1-3, 5, ...")))
-		self.mandatoryInt = tk.IntVar()
-		self.mandatoryInt.set(0)
-		self.mandatoryButton = addp(tk.Checkbutton(holder, text="Mandatory", var=self.mandatoryInt))
-		add(tk.Button(holder, text="Enter", command=lambda:self.enterPressed(None)))
+		addp(tk.Button(holder, text="Enter", command=lambda:self.enterPressed(None)))
 
 		self.errorMessages = MultiMessageStringVarHideEmpty()
 		self.errorMessagesLabel = grid(tk.Label(self, textvariable=self.errorMessages.Var, fg="red", justify="left"), sticky=W)
 		self.rowconfigure(2, minsize=5)
 
 		self.courseDisplay = grid(CourseDisplay(self, height=20, highlightbackground="grey", highlightthickness=1, highlightcolor="grey"), sticky=E+W)
-
 		self.rowconfigure(4, minsize=5)
 
 		newRow()
@@ -206,9 +213,6 @@ class CourseInputFrame(tk.Frame):
 
 		# The following must be done after all other layout finished
 		self.errorMessages.SetWidget(self.errorMessagesLabel)
-
-	def isMandatory(self):
-		return self.mandatoryInt.get() == 1
 
 	def schedule(self):
 		# todo verify no problems with data
@@ -228,7 +232,6 @@ class CourseInputFrame(tk.Frame):
 		self.coursePrefix.text = ""
 		self.courseNumber.text = ""
 		self.sectionNumbers.text = ""
-		self.mandatoryInt.set(0)
 
 	def inputErrorsExist(self):
 		for error in self.INPUT_ERRORS:
@@ -241,7 +244,7 @@ class CourseInputFrame(tk.Frame):
 			self.errorMessages.Remove(error)
 
 	def allInputClear(self):
-		return not self.coursePrefix.text and not self.courseNumber.text and not self.sectionNumbers.text and not self.isMandatory()
+		return not self.coursePrefix.text and not self.courseNumber.text and not self.sectionNumbers.text
 
 	def enterPressed(self, event):
 		self.clearInputErrors()

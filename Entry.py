@@ -8,12 +8,14 @@ def print(*args, **kwargs):
 
 class Entry(tk.Entry):
 	'''An Entry with a .text property. Also supports "placeholderText".'''
+
+	# Note: For the sake of EntryValidate, never use self.textVar.set -- use self.text = "" instead; otherwise, validation may permanently break for this object.
 	def __init__(self, *args, placeholderText=None, placeholderColor="grey", **kwargs):
 		self.textVar = tk.StringVar()
 		self.textVar.set(kwargs.pop("text", ""))
 		self.placeholderText = placeholderText
 		self.placeholderColor = placeholderColor
-		
+
 		kwargs["textvariable"] = self.textVar
 		kwargs.setdefault("exportselection", False)
 		super().__init__(*args, **kwargs)
@@ -23,7 +25,7 @@ class Entry(tk.Entry):
 		self.bind("<FocusOut>", self.focusOut)
 
 		if self.textVar.get() == "":
-			self.activatePlaceholder()
+			self.text = ""
 
 	def isPlaceholderActive(self):
 		return self.placeholderText and self.cget("fg") == self.placeholderColor
@@ -67,11 +69,24 @@ class Entry(tk.Entry):
 class EntryValidate(Entry): #abstract
 	def __init__(self, master, *args, **kwargs):
 		kwargs["validate"] = "key"
-		kwargs["validatecommand"] = (master.register(self.validate), "%P")
+		kwargs["validatecommand"] = (master.register(self._validate), "%P")
+		self.alwaysReturnTrue = False
 		super().__init__(master, *args, **kwargs)
+
+	@Entry.text.setter
+	def text(self, value):
+		self.alwaysReturnTrue = True
+		Entry.text.fset(self, value)
+		self.alwaysReturnTrue = False
+
+	def _validate(self, newText):
+		if self.alwaysReturnTrue:
+			return True
+		return self.validate(newText)
 
 class EntryLetters(EntryValidate):
 	def validate(self, newText):
+		print("letters validate:", repr(newText))
 		return newText == "" or newText.isalpha()
 
 class EntryNumbers(EntryValidate):
