@@ -177,9 +177,9 @@ class CourseInputFrame(tk.Frame):
 		def bind(obj):
 			obj.bind("<Return>", self.enterPressed)
 			return obj
-		self.coursePrefix = bind(addp(EntryLetters(holder, width=8)))
-		self.courseNumber = bind(addp(EntryNumbers(holder, width=8)))
-		self.sectionNumbers = bind(addp(EntryRange(holder, width=8)))
+		self.coursePrefix = bind(addp(EntryLetters(holder, width=8, placeholderText="Prefix")))
+		self.courseNumber = bind(addp(EntryNumbers(holder, width=8, placeholderText="Number")))
+		self.sectionNumbers = bind(addp(EntryRange(holder, width=8, placeholderText="1-3, 5, ...")))
 		self.mandatoryInt = tk.IntVar()
 		self.mandatoryInt.set(0)
 		self.mandatoryButton = addp(tk.Checkbutton(holder, text="Mandatory", var=self.mandatoryInt))
