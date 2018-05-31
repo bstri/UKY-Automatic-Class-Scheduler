@@ -1,9 +1,3 @@
-Summary:
-	☐	Graphical or text-based configuration input
-	☐	Obtain up-to-date classes for specified semester and desired courses
-	☐	Calculating desirable schedules based on classes and configuration
-	☐	Saving results and/or graphical output
-	
 Control Flow:
 	Main handles the flow of the entire program, and so it should start by making the course input gui
 	Course Input Gui module:

@@ -1,5 +1,7 @@
 import tkinter as tk
-class Entry(tk.Entry):
+from tkinter import ttk
+
+class Entry(ttk.Entry):
 	'''An Entry with a .text property.'''
 	def __init__(self, *args, **kwargs):
 		self.textVar = tk.StringVar()
@@ -27,11 +29,38 @@ class EntryLetters(EntryValidate):
 		return newText == "" or newText.isalpha()
 
 class EntryNumbers(EntryValidate):
+	'''Accepts only integers as input (no decimals or negatives).'''
+	def __init__(self, *args, min=None, max=None, **kwargs):
+		# Strategy is to allow any number in validation and then snap it to the min/max on FocusOut.
+		self.min = min
+		self.max = max
+		self.minInput = None if min is None else 0
+		self.maxInput = None if max is None else int("9" * len(str(max)))
+		super().__init__(*args, **kwargs)
+		self.bind("<FocusOut>", self.putInRange)
+
 	def validate(self, newText):
-		return newText == "" or newText.isdigit()
+		return newText == "" or (newText.isdigit() and self.inRange(int(newText)))
+
+	def inRange(self, v):
+		return (self.minInput is None or v >= self.minInput) and (self.maxInput is None or v <= self.maxInput)
+
+	def putInRange(self, event):
+		if self.text == "":
+			if self.min:
+				self.text = self.min
+			elif self.max:
+				self.text = self.max
+			return
+		v = int(self.text)
+		if self.min and v < self.min:
+			self.text = self.min
+		elif self.max and v > self.max:
+			self.text = self.max
 
 import re
 class EntryRange(EntryValidate):
+	'''Allow entry of ranges, ex "0-10, 13, 15, 17-20"'''
 	pattern = re.compile(r"(\d+)(?: *\- *(\d+))?[, -]*")
 	def __init__(self, *args, maxNum=1000, **kwargs):
 		super().__init__(*args, **kwargs)
