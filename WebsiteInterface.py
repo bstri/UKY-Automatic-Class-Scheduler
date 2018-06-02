@@ -1,29 +1,42 @@
 import requests
 from lxml import html
-import datetime
+from datetime import datetime, timedelta
 from Courses import CourseInfo, SectionInfo, ClassMeeting
+import pickle
+
+CACHE_EXPIRY = timedelta(hours=1) # how often cache entries need re-retrieved
+
+try:
+	f = open('catalogcache', 'rb')
+except IOError: # couldn't open file
+	cachedDict = {}
+	lastRetrievalDict = {}
+else:
+	try:
+		cachedDict = pickle.load(f)
+	except EOFError: # didn't read anything
+		cachedDict = {}
+		lastRetrievalDict = {}
+	else:
+		lastRetrievalDict = pickle.load(f)
+	f.close()
+	
+def saveCourseInfoCache(courseDict, recencyDict):
+	with open('catalogcache', 'wb') as f:
+		pickle.dump(courseDict, f, pickle.HIGHEST_PROTOCOL)
+		pickle.dump(recencyDict, f, pickle.HIGHEST_PROTOCOL)
+import atexit
+atexit.register(lambda: saveCourseInfoCache(cachedDict, lastRetrievalDict))
 
 class WebsiteInterface:
 	'''Fetches course data from the online course catalog'''
-	
-	MinCreditDefault = 12
-	MaxCreditDefault = 21
-	
-	@staticmethod
-	def GetDefaultSemester():
-		t = datetime.date.today()
-		return (3 <= t.month <= 9) and "Fall" or "Spring" # guesses fall semester if the current month is 
-	
-	@staticmethod
-	def GetDefaultYear():
-		return datetime.date.today().year
 		
 	def __init__(self):
 		self.session = requests.Session()
 		# Make the webpage think we're using Chrome
 		self.session.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
 		
-	def RequestInfoAboutCourse(self, course, semester, year):
+	def postRequest(self, course, semester, year):
 		r = self.session.post("https://myuk.uky.edu/zAPPS/CourseCatalog/Offering", data = {
 			"CoursePrefix": course.Prefix,
 			"CourseNumber": str(course.Number),
@@ -100,8 +113,8 @@ class WebsiteInterface:
 				timeframe = daysAndTime[1] # of the form '9:00 am - 9:50 am' for example
 				startTime = timeframe[:timeframe.find(' -')]
 				endTime = timeframe[timeframe.find('-') + 2:]
-				startDateTime = datetime.datetime.strptime(startTime, "%I:%M %p")
-				endDateTime = datetime.datetime.strptime(endTime, "%I:%M %p")
+				startDateTime = datetime.strptime(startTime, "%I:%M %p")
+				endDateTime = datetime.strptime(endTime, "%I:%M %p")
 				
 				classMeeting = ClassMeeting(meetingType, days, startDateTime, endDateTime, strLocation, professor)
 				sectionInfo.AddClassMeeting(classMeeting)
@@ -122,3 +135,18 @@ class WebsiteInterface:
 				numC = stdCredits
 				variableCredits = False
 		return CourseInfo(course, numC, sectionInfos, variableCredits)
+		
+	def RequestInfoAboutCourse(self, course, semester, year):
+		# get info from cache, if available and recent
+		now = datetime.utcnow()
+		cacheKey = str(course) + semester + str(year)
+		info = cachedDict.get(cacheKey)
+		recency = lastRetrievalDict.get(cacheKey)
+		if not info or now > recency + CACHE_EXPIRY: # get info from internet if cache is out of date
+			info = self.postRequest(course, semester, year)
+			if type(info) is str:
+				print("Error occurred when getting info for ", c, ": \n", info)
+				return
+			cachedDict[cacheKey] = info
+			lastRetrievalDict[cacheKey] = now
+		return info

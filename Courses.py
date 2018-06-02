@@ -1,4 +1,5 @@
 '''Classes to represent information about courses'''
+from datetime import datetime
 
 class Course:
 	'''The prefix and number for a course.
@@ -53,8 +54,8 @@ class SectionInfo:
 		self.NumCredits = numCredits
 		self.Warnings = []
 		self.ClassMeetings = []
-		# self.DayToStartTime = {} # each key is a day of the week M-F
-		# self.DayToEndTime = {}
+		self.EarliestStartTime = datetime.strptime("11:59 pm", "%I:%M %p")
+		self.LatestEndTime = datetime.strptime("12:00 am", "%I:%M %p")
 		self.TimesTBD = False
 		self.LocationTBD = False
 		self.ProfessorTBD = False
@@ -68,14 +69,10 @@ class SectionInfo:
 		
 	def AddClassMeeting(self, meeting):
 		self.ClassMeetings.append(meeting)
-		# if not self.DayToStartTime.get(day):
-		# 	self.DayToStartTime[day] = meeting.StartTime
-		# 	self.DayToEndTime[day] = meeting.EndTime
-		# else: 
-		# 	if self.DayToStartTime[day] > meeting.StartTime:
-		# 		self.DayToStartTime[day] = meeting.StartTime
-		# 	if self.DayToEndTime[day] < meeting.EndTime:
-		# 		self.DayToEndTime[day] = meeting.EndTime
+		if self.EarliestStartTime > meeting.StartTime:
+			self.EarliestStartTime = meeting.StartTime
+		if self.LatestEndTime < meeting.EndTime:
+			self.LatestEndTime = meeting.EndTime
 		
 	def WarnTBDTimes(self):
 		if self.TimesTBD:

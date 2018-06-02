@@ -1,4 +1,4 @@
-from WebsiteInterface import WebsiteInterface
+from datetime import date
 
 class ConfigurationData:
 	'''Represents a user's input to the program.'''
@@ -6,12 +6,23 @@ class ConfigurationData:
 	HardCreditMinimum = 1
 	HardCreditMaximum = 30
 	HardCourseNumberMaximum = 15
+	MinCreditDefault = 12
+	MaxCreditDefault = 21
+	
+	@staticmethod
+	def GetDefaultSemester():
+		t = date.today()
+		return (3 <= t.month <= 9) and "Fall" or "Spring" # guesses fall semester if the current month is 
+	
+	@staticmethod
+	def GetDefaultYear():
+		return date.today().year
 	
 	def __init__(self, semester=None, year=None, minCredits=None, maxCredits=None):
-		self.Semester = semester or WebsiteInterface.GetDefaultSemester()
-		self.Year = year or WebsiteInterface.GetDefaultYear()
-		self.MinCredits = max(self.HardCreditMinimum, minCredits or WebsiteInterface.MinCreditDefault)
-		self.MaxCredits = min(self.HardCreditMaximum, maxCredits or WebsiteInterface.MaxCreditDefault)
+		self.Semester = semester or self.GetDefaultSemester()
+		self.Year = year or self.GetDefaultYear()
+		self.MinCredits = max(self.HardCreditMinimum, minCredits or self.MinCreditDefault)
+		self.MaxCredits = min(self.HardCreditMaximum, maxCredits or self.MaxCreditDefault)
 		self.CourseInput = []
 	
 	def FindProblems(self):

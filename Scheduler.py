@@ -1,6 +1,13 @@
 from copy import copy, deepcopy
+from datetime import datetime
 from itertools import chain, combinations, product
 from Courses import CourseInfo
+
+def discardZeroPrefix(string):
+	if string[0] == '0':
+		return string[1:]
+	else:
+		return string
 
 class Schedule:
 	'''Info about a class schedule'''
@@ -8,8 +15,18 @@ class Schedule:
 	def __init__(self):
 		self.NumCredits = 0
 		self.Sections = []
-		self.AverageStartTime = None
-		self.AverageEndTime = None
+		self.EarliestStartTimeToStr = None
+		self.LatestEndTimeToStr = None
+		self.EarliestStartTime = datetime.strptime("11:59 pm", "%I:%M %p")
+		self.LatestEndTime = datetime.strptime("12:00 am", "%I:%M %p")
+		
+	def setStartTime(self, t):
+		self.EarliestStartTime = t
+		self.EarliestStartTimeToStr = discardZeroPrefix(t.strftime('%I:%M%p'))
+		
+	def setEndTime(self, t):
+		self.LatestEndTime = t
+		self.LatestEndTimeToStr = discardZeroPrefix(t.strftime('%I:%M%p'))
 		
 	def SectionFits(self, section):
 		for s in self.Sections:
@@ -20,7 +37,10 @@ class Schedule:
 	def AddSection(self, section):
 		self.Sections.append(section)
 		self.NumCredits += section.NumCredits
-		# todo: update average start and end times
+		if self.EarliestStartTime > section.EarliestStartTime:
+			self.setStartTime(section.EarliestStartTime)
+		if self.LatestEndTime < section.LatestEndTime:
+			self.setEndTime(section.LatestEndTime)
 		
 	def __str__(self):
 		return '; '.join(['{}-{}'.format(str(s.Course), str(s.SectionNumber)) for s in self.Sections]) 
@@ -56,6 +76,8 @@ class ScheduleList(list):
 		# get all schedules that satisfy the mandatory blocks
 		numCreditsToRootSchedules = {0:[Schedule()]}
 		for block in mandatoryBlocks:
+			if len(block) == 0:
+				continue
 			combos = combinations(block, block.Count)
 			numCreditsToLeafSchedules = {}
 			for c in combos:
@@ -67,14 +89,15 @@ class ScheduleList(list):
 					for s in v:
 						numCreditsToLeafSchedules[newNumCredits].extend(makeScheduleTree(s,c))
 			if len(numCreditsToLeafSchedules) == 0:
-				return "No schedules found containing the specified mandatory courses."
+				print("No schedules found containing the specified mandatory courses.")
+				return
 			numCreditsToRootSchedules = numCreditsToLeafSchedules
 			
 		iterables = []
 		for block in optionalBlocks:
 			iterables.append(list(block.Count and combinations(block, block.Count) or chain.from_iterable(combinations(block, r) for r in range(len(block) + 1))))
 		# Tried limiting which all combinations were tested, but it produced only a small speed increase
-		allCombinations = product(*iterables) 
+		allCombinations = list(product(*iterables))
 		
 		for credits,rootSchedules in numCreditsToRootSchedules.items():
 			# check if the mandatory schedules (if there are any) can be standalone schedules
@@ -100,9 +123,6 @@ class ScheduleList(list):
 			
 	def __str__(self):
 		return '\n'.join(map(str, self))
-		
-	def SortByNumCredits(self, descending=False):
-		self.sort(key=lambda s: s.NumCredits, reverse=descending)
 		
 class CourseBlock(list):
 	'''A list of CourseInfo with scheduling data'''
