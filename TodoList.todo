@@ -36,13 +36,13 @@ Control Flow:
 		✔	Generate schedules @done (18-05-27 23:17)
 	Schedule Viewer Gui:
 		Input: List of schedules
-		☐	Ignore schedules starting at (checkboxes): 8am, 9am, 9:30, 10, 11, ...
-		☐	Ignore schedules ending at 8pm, 7pm, 6pm, ...
+		✔	Ignore schedules starting at (checkboxes): 8am, 9am, 9:30, 10, 11, ... @done (18-06-02 00:19)
+		✔	Ignore schedules ending at 8pm, 7pm, 6pm, ... @done (18-06-02 00:19)
 			> Ideally would show just the times that appear in the schedules, but sometimes there can be quite a few schedules
-		☐	Showing schedules with (checkboxes for each credit number in the credit range)
-		☐	"Showing 100 of [# schedules found] schedules found"
+		✔	Showing schedules with (checkboxes for each credit number in the credit range) @done (18-06-02 00:19)
+		✔	"Showing 100 of [# schedules found] schedules found" @done (18-06-02 00:19)
 			> Don't sort the schedules, because they come in the order that the user input the classes
-		☐	Column headers: #Credits, Start Time, End Time
+		✔	Column headers: #Credits, Start Time, End Time @done (18-06-02 00:19)
 		☐	Mousing over a schedule will create a schedule visualization on the right; clicking expands the visualization
 			☐	Shows 8am - 8pm as row headers, M-F as column headers
 			☐	Shows each class meeting, the size of each determined by the time span of the meeting; content is the full class name and the meeting type
