@@ -1,7 +1,13 @@
 from tkinter import *
 from tkinter import ttk # themed widgets (more up-to-date looking)
+from PIL import ImageTk, Image
+from datetime import datetime
 
 class checkbar(Frame):
+	'''Frame of checkboxes that fire cmd when toggled
+	
+	cmd should take 2 arguments: the index in picks and the checkbox state'''
+	
 	def __init__(self, parent, picks, cmd, checked=False):
 		super().__init__(parent)
 		self.vars = []
@@ -11,14 +17,68 @@ class checkbar(Frame):
 			chk.grid(row=1, column=i+1)
 			self.vars.append(var)
 			var.set(checked)
-	def state(self):
-		return map((lambda var: var.get()), self.vars)
+			
+class meetingBlock(Frame):
+	''''''
+	
+	def __init__(self, parent, classMeeting):
+		super().__init__(parent, bd=1, relief='solid')
 		
+		
+class scheduleImage(Label):
+	''''''
+	
+	dayWidth = 115/850
+	originTime = datetime.strptime('8am', '%I%p')
+	totalMinutes = 13*60 + 30
+	
+	def __init__(self, parent):
+		super().__init__(parent)
+		self.dayToXPos = {d: i*self.dayWidth + 45/850 for i,d in enumerate('UMTWRFS')} # made up abbr for Sat and Sun
+		self.original = Image.open('scheduleImage.gif')
+		self.blocks = []
+		# TODO: remove days and times from the image, then put them in here as labels, positioning them in updateSize
+		
+	def updateSize(self):
+		resized = self.original.resize((self.winfo_width(), self.winfo_height()), Image.ANTIALIAS)
+		self.image = ImageTk.PhotoImage(resized)
+		self['image'] = self.image
+		
+	def datetimeToYPos(self, dt):
+		delta = dt - self.originTime
+		minutes = delta.seconds/60
+		return (minutes + 30)/self.totalMinutes
+		
+	def timedeltaToHeight(self, td):
+		return td.seconds/60/self.totalMinutes
+		
+	def SetSchedule(self, schedule):
+		for b in self.blocks:
+			b.destroy()
+		self.blocks = []
+		for s in schedule.Sections:
+			for m in s.ClassMeetings:
+				for d in m.Days:
+					# TODO: these blocks are slightly off position depending on where they are
+					block = meetingBlock(self, m)
+					block.place(relwidth=self.dayWidth, 
+						relheight=self.timedeltaToHeight(m.Duration), 
+						relx=self.dayToXPos[d], 
+						rely=self.datetimeToYPos(m.StartTime))
+					self.blocks.append(block)
+
+def discardZeroPrefix(string):
+	if string[0] == '0':
+		return string[1:]
+	else:
+		return string
+
 class scheduleInfoFrame(Frame):
 	'''A frame containing basic schedule info'''
 	
-	def __init__(self, parent):
+	def __init__(self, parent, schImg):
 		super().__init__(parent, bd=1)
+		self.schImg = schImg
 		self.CreditLabel = ttk.Label(self)
 		self.CreditLabel.grid(row=1, column=1, sticky='n')
 		self.columnconfigure(1, weight=1, pad=25)
@@ -34,7 +94,7 @@ class scheduleInfoFrame(Frame):
 	
 	def onEnter(self, e):
 		self['relief'] = 'solid'
-		print(self.Schedule)
+		self.schImg.SetSchedule(self.Schedule)
 	
 	def onLeave(self, e):
 		self['relief'] = 'flat'
@@ -42,8 +102,8 @@ class scheduleInfoFrame(Frame):
 	def SetSchedule(self, schedule):
 		self.Schedule = schedule
 		self.CreditLabel['text'] = str(schedule.NumCredits)
-		self.StartTimeLabel['text'] = schedule.EarliestStartTimeToStr
-		self.EndTimeLabel['text'] = schedule.LatestEndTimeToStr
+		self.StartTimeLabel['text'] = discardZeroPrefix(schedule.EarliestStartTimeToStr)
+		self.EndTimeLabel['text'] = discardZeroPrefix(schedule.LatestEndTimeToStr)
 		self.grid()
 		
 	def ClearSchedule(self):
@@ -52,7 +112,7 @@ class scheduleInfoFrame(Frame):
 class scheduleInfoList(Frame):
 	'''A frame containing rows of scheduleInfoFrames'''
 	
-	def __init__(self, parent, maxListLen):
+	def __init__(self, parent, maxListLen, schImg):
 		super().__init__(parent)
 		ttk.Label(self, text='# Credits').grid(column=1, row=1, padx=(0,6))
 		ttk.Label(self, text='Start Time').grid(column=2, row=1, padx=6)
@@ -60,7 +120,7 @@ class scheduleInfoList(Frame):
 		self.scheduleFrames = []
 		self.maxRows = maxListLen
 		for i in range(maxListLen):
-			f = scheduleInfoFrame(self)
+			f = scheduleInfoFrame(self, schImg)
 			f.grid(row=2+i, column=1, columnspan=3, pady=3, sticky='ew')
 			self.scheduleFrames.append(f)
 		
@@ -73,14 +133,12 @@ class scheduleInfoList(Frame):
 class ScheduleViewer(Tk):
 	''''''
 	
-	scheduleColumns = 2
-	schedulesPerColumn = 20
-	schedulesPerPage = scheduleColumns*schedulesPerColumn
+	scheduleColumns = 2 # todo: a nice feature would be to allow this to change with self's size
 	
 	def __init__(self, scheduleList=[], courseList=[]):
 		super().__init__()
 		self.title("Schedule Viewer")
-		self.geometry("1200x700")
+		self.geometry("1200x750")
 		self.ScheduleList = scheduleList
 		self.ActiveSchedules = scheduleList[:]
 		self.courseList = courseList
@@ -96,6 +154,8 @@ class ScheduleViewer(Tk):
 		
 		ttk.Label(filterFrame, text="Start Times: ").grid(row=2, column=1, sticky='e', pady=3)
 		self.startTimes = self.getScheduleAttributeList("EarliestStartTimeToStr")
+		self.startTimes = list(map(lambda t: t.strftime('%I:%M%p'), sorted(list(map(lambda t: datetime.strptime(t, '%I:%M%p'), self.startTimes)))))
+		# Reasoning: Want the datetimes sorted like normal (using < so 8AM comes first), but self.startTimes is a list of string times like '8:00AM' (couldn't figure out how to get only the unique datetimes from the schedulelist) and so the normal sorting doesn't quite work because '11:00AM' comes before '8:00AM.' So I create datetimes out of these strings, sort that list, then convert the times back into a list of strings.
 		checkbar(filterFrame, self.startTimes, self.changeStartTime, True).grid(row=2, column=2, sticky='w')
 		
 		ttk.Label(filterFrame, text="End Times: ").grid(row=3, column=1, sticky='e', pady=3)
@@ -109,24 +169,48 @@ class ScheduleViewer(Tk):
 		self.scheduleCount = ttk.Label(self)
 		self.scheduleCount.grid(row=2, column=1, sticky='w', pady=(20,10))
 		
-		scheduleFrame = Frame(self)
-		scheduleFrame.grid(row=3, column=1, sticky='nesw')
-		self.scheduleInfoLists = []
-		for i in range(self.scheduleColumns):
-			s = scheduleInfoList(scheduleFrame, self.schedulesPerColumn)
-			s.grid(row=1, column=i+1, padx=15, sticky='n')
-			self.scheduleInfoLists.append(s)
+		self.scheduleFrame = Frame(self)
+		self.scheduleFrame.grid(row=3, column=1, sticky='nesw')
+		self.rowconfigure(3, weight = 1)
 		
-		self.updateScheduleView()
+		self.scheduleFrame.columnconfigure(self.scheduleColumns + 1, weight = 1)
+		self.scheduleFrame.rowconfigure(1, weight = 1)
+		self.image = scheduleImage(self.scheduleFrame)
+		self.image.grid(row=1, column=self.scheduleColumns + 1, sticky='nesw')
+		
+		self.scheduleInfoLists = []
+		
+		self._after_id = None
+		self.scheduleFrame.bind('<Configure>', self.onResize)
 		self.mainloop()
 		
-	def updateScheduleCount(self):
-		self.scheduleCount['text'] = 'Showing %d of %d schedules found' % (min(self.schedulesPerPage, len(self.ActiveSchedules)), len(self.ActiveSchedules))
+	def onResize(self, e):
+		if self._after_id:
+			self.after_cancel(self._after_id)
+		self._after_id = self.after(250, lambda event=e: self.updateScheduleFrame(event))
+		
+	def updateScheduleFrame(self, e):
+		self.schedulesPerColumn = e.height//28
+		# TODO: change scheduleinfolist so that it can be updated, rather than needing to make new ones
+		for c in self.scheduleInfoLists:
+			c.destroy()
+		self.scheduleInfoLists = []
+		for i in range(self.scheduleColumns):
+			s = scheduleInfoList(self.scheduleFrame, self.schedulesPerColumn, self.image)
+			s.grid(row=1, column=i+1, padx=15, sticky='ns')
+			self.scheduleInfoLists.append(s)
+		
+		self.image.updateSize()	
+		
+		self.updateScheduleView()
 		
 	def getScheduleAttributeList(self, attr):
 		l = {getattr(s, attr) for s in self.ScheduleList}
 		self.attributeFilters[attr] = l
 		return sorted(list(l))
+		
+	def updateScheduleCount(self):
+		self.scheduleCount['text'] = 'Showing %d of %d schedules found' % (min(self.schedulesPerColumn*self.scheduleColumns, len(self.ActiveSchedules)), len(self.ActiveSchedules))
 	
 	def updateScheduleView(self):
 		for i in range(self.scheduleColumns):

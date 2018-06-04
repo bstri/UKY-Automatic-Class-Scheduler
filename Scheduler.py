@@ -3,12 +3,6 @@ from datetime import datetime
 from itertools import chain, combinations, product
 from Courses import CourseInfo
 
-def discardZeroPrefix(string):
-	if string[0] == '0':
-		return string[1:]
-	else:
-		return string
-
 class Schedule:
 	'''Info about a class schedule'''
 	
@@ -22,11 +16,11 @@ class Schedule:
 		
 	def setStartTime(self, t):
 		self.EarliestStartTime = t
-		self.EarliestStartTimeToStr = discardZeroPrefix(t.strftime('%I:%M%p'))
+		self.EarliestStartTimeToStr = t.strftime('%I:%M%p')
 		
 	def setEndTime(self, t):
 		self.LatestEndTime = t
-		self.LatestEndTimeToStr = discardZeroPrefix(t.strftime('%I:%M%p'))
+		self.LatestEndTimeToStr = t.strftime('%I:%M%p')
 		
 	def SectionFits(self, section):
 		for s in self.Sections:
